@@ -1,0 +1,15 @@
+{
+  "npmClient": "yarn",
+  "useWorkspaces": true,
+  "packages": [
+    "packages/**"
+  ],
+  "publish": {
+    "npmClient": "npm",
+    "allowBranch": [
+      "master",
+      "canary"
+    ]
+  },
+  "version": "independent"
+}
