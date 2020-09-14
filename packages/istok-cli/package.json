@@ -44,5 +44,9 @@
     "cross-env": "^7.0.2",
     "tsdx": "^0.13.2"
   },
-  "gitHead": "b16d185cacd3c73eb9b4d192c21657995a498f2f"
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "gitHead": "7617d9ceb82edb5c2421254b0eace4d0ede7a5c3"
 }
