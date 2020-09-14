@@ -6,6 +6,7 @@
   ],
   "publish": {
     "npmClient": "npm",
+    "message": "chore(release): publish",
     "allowBranch": [
       "master",
       "canary"
