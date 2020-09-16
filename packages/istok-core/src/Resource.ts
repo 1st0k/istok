@@ -1,4 +1,6 @@
-export type ResourceId = readonly string[];
+import { IdStringArray } from './utils/id';
+
+export type ResourceId = IdStringArray;
 
 export interface Resource<T, I extends ResourceId = ResourceId> {
   id: I;
