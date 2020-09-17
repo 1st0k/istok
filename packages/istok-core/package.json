@@ -42,5 +42,9 @@
     "access": "public",
     "registry": "https://registry.npmjs.org"
   },
-  "gitHead": "7617d9ceb82edb5c2421254b0eace4d0ede7a5c3"
+  "gitHead": "7617d9ceb82edb5c2421254b0eace4d0ede7a5c3",
+  "dependencies": {
+    "@types/ramda": "^0.27.17",
+    "ramda": "^0.27.1"
+  }
 }
