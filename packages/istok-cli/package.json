@@ -3,7 +3,7 @@
   "name": "@istok/cli",
   "author": "Alexander \"Snov\" Semenchenko",
   "main": "dist/index.js",
-  "module": "dist/istok-cli.esm.js",
+  "module": "dist/cli.esm.js",
   "typings": "dist/index.d.ts",
   "files": [
     "dist",
@@ -27,9 +27,6 @@
     "lint": "tsdx lint",
     "prepare": "yarn build"
   },
-  "workspaces": [
-    "packages/**"
-  ],
   "prettier": {
     "printWidth": 120,
     "tabWidth": 2,

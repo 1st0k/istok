@@ -3,7 +3,7 @@
   "name": "@istok/docs",
   "author": "Alexander \"Snov\" Semenchenko",
   "main": "dist/index.js",
-  "module": "dist/istok-docs.esm.js",
+  "module": "dist/docs.esm.js",
   "typings": "dist/index.d.ts",
   "files": [
     "dist",
@@ -24,9 +24,6 @@
     "lint": "tsdx lint",
     "prepare": "yarn build"
   },
-  "workspaces": [
-    "packages/**"
-  ],
   "prettier": {
     "printWidth": 120,
     "tabWidth": 2,
