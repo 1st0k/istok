@@ -3,7 +3,7 @@ import { isGetListResultSuccess, isGetSetResultSuccess, isResultError } from './
 
 describe('Source should be typed', () => {
   it('success result usage "get"', async done => {
-    const result = await successSource.get('a/b/c');
+    const result = await successSource.get('a/1');
     const isOk = isGetSetResultSuccess(result);
 
     expect(isOk).toBe(true);
@@ -36,7 +36,7 @@ describe('Source should be typed', () => {
   });
 
   it('success result usage "set"', async done => {
-    const result = await successSource.set('a/b/c', 'set to this data');
+    const result = await successSource.set('a/1', 'set to this data');
     const isOk = isGetSetResultSuccess(result);
 
     expect(isOk).toBe(true);
@@ -54,7 +54,7 @@ describe('Source should be typed', () => {
   });
 
   it('error result usage "get"', async done => {
-    const result = await errorSource.get('a/b/c');
+    const result = await errorSource.get('a/1');
     const isError = isResultError(result);
 
     expect(isError).toBe(true);
@@ -67,7 +67,7 @@ describe('Source should be typed', () => {
   });
 
   it('error result usage "set"', async done => {
-    const result = await errorSource.set('a/b/c', 'will not set to this data');
+    const result = await errorSource.set('a/1', 'will not set to this data');
     const isError = isResultError(result);
 
     expect(isError).toBe(true);

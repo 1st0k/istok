@@ -21,6 +21,9 @@ export type ResourceOpListResultSuccess = { type: Success; resources: Identifiab
 
 export type ResourceOpListResult<E extends string> = ResourceOpListResultSuccess | ResourceOpResultError<E>;
 
+export const ERROR_RESOURCE_NOT_EXISTS = 'RESOURCE_NOT_EXISTS' as const;
+export type ErrorResourceNotExists = typeof ERROR_RESOURCE_NOT_EXISTS;
+
 export interface UniformFiniteSource<DataType, E extends string = string> {
   get(resourceId: ResourceId): Promise<ResourceOpResult<DataType, E>>;
   set(resourceId: ResourceId, data: DataType): Promise<ResourceOpResult<DataType, E>>;
