@@ -13,28 +13,22 @@ import { ERROR, Error, SUCCESS, Success } from './utils/Result';
     - set Resource's data
     - get Resource
 */
-type ResourceOpResultSuccess<T> = { type: Success; resource: Resource<T> };
-type ResourceOpResultError<E extends string> = { type: Error; error: E };
-type ResourceOpResult<D, E extends string> = ResourceOpResultSuccess<D> | ResourceOpResultError<E>;
+export type ResourceOpResultSuccess<T> = { type: Success; resource: Resource<T> };
+export type ResourceOpResultError<E extends string> = { type: Error; error: E };
+export type ResourceOpResult<D, E extends string> = ResourceOpResultSuccess<D> | ResourceOpResultError<E>;
 
-type ResourceOpListResultSuccess<Id extends ResourceId> = { type: Success; resources: Identifiable<Id>[] };
+export type ResourceOpListResultSuccess = { type: Success; resources: Identifiable<ResourceId>[] };
 
-type ResourceOpListResult<E extends string, Id extends ResourceId> =
-  | ResourceOpListResultSuccess<Id>
-  | ResourceOpResultError<E>;
+export type ResourceOpListResult<E extends string> = ResourceOpListResultSuccess | ResourceOpResultError<E>;
 
-export interface UniformFiniteSource<DataType, E extends string = string, Id extends ResourceId = ResourceId> {
-  get(resourceId: Id): Promise<ResourceOpResult<DataType, E>>;
-  set(resourceId: Id, data: DataType): Promise<ResourceOpResult<DataType, E>>;
+export interface UniformFiniteSource<DataType, E extends string = string> {
+  get(resourceId: ResourceId): Promise<ResourceOpResult<DataType, E>>;
+  set(resourceId: ResourceId, data: DataType): Promise<ResourceOpResult<DataType, E>>;
 
-  getList(): Promise<ResourceOpListResult<E, Id>>;
+  getList(): Promise<ResourceOpListResult<E>>;
 }
 
-export type Source<DataType, E extends string = string, Id extends ResourceId = ResourceId> = UniformFiniteSource<
-  DataType,
-  E,
-  Id
->;
+export type Source<DataType, E extends string = string> = UniformFiniteSource<DataType, E>;
 
 export function makeResultError<E extends string>(error: E): ResourceOpResultError<E> {
   return {
@@ -43,19 +37,14 @@ export function makeResultError<E extends string>(error: E): ResourceOpResultErr
   };
 }
 
-export function makeGetSetResultSuccess<T, Id extends ResourceId = ResourceId>(
-  id: Id,
-  data: T
-): ResourceOpResultSuccess<T> {
+export function makeGetSetResultSuccess<T>(id: ResourceId, data: T): ResourceOpResultSuccess<T> {
   return {
     type: SUCCESS,
     resource: makeResource(id, data),
   };
 }
 
-export function makeGetListResultSuccees<Id extends ResourceId>(
-  ids: Identifiable<Id>[]
-): ResourceOpListResultSuccess<Id> {
+export function makeGetListResultSuccees(ids: Identifiable<ResourceId>[]): ResourceOpListResultSuccess {
   return {
     type: SUCCESS,
     resources: ids,
@@ -64,7 +53,7 @@ export function makeGetListResultSuccees<Id extends ResourceId>(
 
 // Results with errors has the same type for any operation
 export function isResultError<E extends string>(
-  result: ResourceOpResult<unknown, E> | ResourceOpListResult<E, any>
+  result: ResourceOpResult<unknown, E> | ResourceOpListResult<E>
 ): result is ResourceOpResultError<E> {
   return result.type === ERROR;
 }
@@ -74,8 +63,6 @@ export function isGetSetResultSuccess<T>(result: ResourceOpResult<T, any>): resu
   return result.type === SUCCESS;
 }
 
-export function isGetListResultSuccess<Id extends ResourceId = ResourceId>(
-  result: ResourceOpListResult<any, Id>
-): result is ResourceOpListResultSuccess<Id> {
+export function isGetListResultSuccess(result: ResourceOpListResult<any>): result is ResourceOpListResultSuccess {
   return result.type === SUCCESS;
 }
