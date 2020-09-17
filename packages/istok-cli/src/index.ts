@@ -1,7 +1,24 @@
-import { square } from '@istok/core';
+import { createMemorySource, isGetListResultSuccess } from '@istok/core';
 
-const input = parseInt(process.argv[2], 10);
+const command = process.argv[2];
+const values = process.argv[3] ?? 'null';
 
 export function main() {
-  console.log(`${input} * ${input} = ${square(input)}`);
+  switch (command) {
+    case 'createMemorySource': {
+      try {
+        const source = createMemorySource({
+          initialResources: JSON.parse(values),
+        });
+        source.getList().then(result => {
+          if (isGetListResultSuccess(result)) {
+            process.stdout.write(JSON.stringify(result.resources));
+          }
+        });
+      } catch (e) {
+        console.log('something went wrong:\n');
+        console.log(e);
+      }
+    }
+  }
 }
