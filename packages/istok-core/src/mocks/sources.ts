@@ -1,28 +1,23 @@
-import { makeResultError, makeGetSetResultSuccess, UniformFiniteSource, makeGetListResultSuccees } from '../Source';
+import { makeResultError, UniformFiniteSource } from '../Source';
+import { createMemorySource } from '../MemorySource';
 
 export const INTENDED_ERROR = 'intended error' as const;
 export type IntendedError = typeof INTENDED_ERROR;
 
-export const successSource: UniformFiniteSource<string, IntendedError> = {
-  get(id) {
-    return Promise.resolve(makeGetSetResultSuccess(id, 'test resource data'));
+export const errorSource: UniformFiniteSource<string> = {
+  async get(id) {
+    return makeResultError(`${INTENDED_ERROR} "get" with resource ${id}`);
   },
-  set(id, data) {
-    return Promise.resolve(makeGetSetResultSuccess(id, data));
+  async set(id, _) {
+    return makeResultError(`${INTENDED_ERROR} "set" with resource ${id}`);
   },
-  getList() {
-    return Promise.resolve(makeGetListResultSuccees([{ id: 'a/1' }]));
+  async getList() {
+    return makeResultError(`${INTENDED_ERROR} "getMany"`);
   },
 };
 
-export const errorSource: UniformFiniteSource<string> = {
-  get(id) {
-    return Promise.resolve(makeResultError(`${INTENDED_ERROR} "get" with resource ${id}`));
+export const successSource: UniformFiniteSource<string, IntendedError> = createMemorySource({
+  initialResources: {
+    'a/1': 'test resource data',
   },
-  set(id, _) {
-    return Promise.resolve(makeResultError(`${INTENDED_ERROR} "set" with resource ${id}`));
-  },
-  getList() {
-    return Promise.resolve(makeResultError(`${INTENDED_ERROR} "getMany"`));
-  },
-};
+});
