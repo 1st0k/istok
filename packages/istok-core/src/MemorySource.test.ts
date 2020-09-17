@@ -1,5 +1,5 @@
 import { createMemorySource } from './MemorySource';
-import { isGetSetResultSuccess, isResultError } from './Source';
+import { isGetListResultSuccess, isGetSetResultSuccess, isResultError } from './Source';
 import { ERROR, SUCCESS } from './utils/Result';
 
 describe('MemorySource should get Resource', () => {
@@ -35,6 +35,66 @@ describe('MemorySource should get Resource', () => {
     expect(resource.type).toEqual(SUCCESS);
     if (isGetSetResultSuccess(resource)) {
       expect(resource.resource.data).toBe('resource-value');
+    }
+
+    done();
+  });
+});
+
+describe('MemorySource should get Resources list', () => {
+  it('empty initial list', async done => {
+    const source = createMemorySource();
+
+    const list = await source.getList();
+
+    expect(isGetListResultSuccess(list)).toBe(true);
+
+    if (isGetListResultSuccess(list)) {
+      expect(list.resources).toBeInstanceOf(Array);
+      expect(list.resources.length).toBe(0);
+    }
+
+    done();
+  });
+
+  it('initial list', async done => {
+    const source = createMemorySource({
+      initialResources: {
+        a: 'resource-a',
+        b: 'resource-b',
+      },
+    });
+
+    const list = await source.getList();
+
+    expect(isGetListResultSuccess(list)).toBe(true);
+
+    if (isGetListResultSuccess(list)) {
+      expect(list.resources).toBeInstanceOf(Array);
+      expect(list.resources.length).toBe(2);
+      expect(list.resources).toEqual(expect.arrayContaining([{ id: 'a' }, { id: 'b' }]));
+    }
+
+    done();
+  });
+
+  it('after items were added', async done => {
+    const source = createMemorySource({
+      initialResources: {
+        a: 'resource-a',
+      },
+    });
+
+    await source.set('b', 'resource-b');
+
+    const list = await source.getList();
+
+    expect(isGetListResultSuccess(list)).toBe(true);
+
+    if (isGetListResultSuccess(list)) {
+      expect(list.resources).toBeInstanceOf(Array);
+      expect(list.resources.length).toBe(2);
+      expect(list.resources).toEqual(expect.arrayContaining([{ id: 'a' }, { id: 'b' }]));
     }
 
     done();
