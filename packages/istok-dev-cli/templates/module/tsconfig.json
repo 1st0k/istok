@@ -1,0 +1,22 @@
+{
+  "extends": "../../tsconfig.json",
+  "include": [
+    "src",
+    "types"
+  ],
+  "compilerOptions": {
+    "target": "es5",
+    "module": "esnext",
+    "lib": [
+      "dom",
+      "esnext"
+    ],
+    "rootDir": "./src",
+    "baseUrl": "./",
+    "paths": {
+      "*": [
+        "node_modules/*"
+      ]
+    }
+  }
+}
