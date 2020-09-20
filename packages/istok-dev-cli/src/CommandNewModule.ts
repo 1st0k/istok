@@ -19,7 +19,7 @@ export function copyTemplate(src: string, dest: string) {
 
 export function newModule(name: string) {
   const selfRoot = process.argv[1].replace(/bin\.js$/, '');
-  const templatesRoot = path.resolve(selfRoot, 'templates/module');
+  const templatesRoot = path.resolve(selfRoot, 'src/templates/module');
   const modulesRoot = path.resolve(process.cwd(), 'packages');
   const newModuleRoot = path.resolve(modulesRoot, 'istok-' + name);
 

@@ -4,6 +4,9 @@
     "src",
     "types"
   ],
+  "exclude": [
+    "src/templates/**"
+  ],
   "compilerOptions": {
     "target": "es5",
     "module": "esnext",
