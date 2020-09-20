@@ -2,7 +2,7 @@ import path from 'path';
 import fs from 'fs-extra';
 
 /*
-  Must be executed from the 
+  Must be executed from the projet's root folder
 */
 export function copyTemplate(src: string, dest: string) {
   return fs
@@ -21,7 +21,7 @@ export function newModule(name: string) {
   const selfRoot = process.argv[1].replace(/bin\.js$/, '');
   const templatesRoot = path.resolve(selfRoot, 'templates/module');
   const modulesRoot = path.resolve(process.cwd(), 'packages');
-  const newModuleRoot = path.resolve(modulesRoot, name);
+  const newModuleRoot = path.resolve(modulesRoot, 'istok-' + name);
 
   console.log('self root', selfRoot);
 

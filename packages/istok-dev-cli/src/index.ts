@@ -1,11 +1,10 @@
 import { execute, isCommand } from './CommandExecutor';
 
-const command = process.argv[2];
-const commandArgs = process.argv.slice(3);
+const [command, ...args] = process.argv.slice(2);
 
 export async function main() {
   if (isCommand(command)) {
-    return execute(command, commandArgs);
+    return execute(command, args);
   } else {
     return {
       type: 'error',
