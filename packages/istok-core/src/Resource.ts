@@ -1,4 +1,4 @@
-import { IdString } from './utils/id';
+import { IdString } from '@istok/utils';
 
 export type ResourceId = IdString;
 

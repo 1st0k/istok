@@ -4,10 +4,9 @@
     - finite resources count at any given moment
 */
 
-import { ResourceId, Resource, makeResource } from './Resource';
-import { Identifiable } from '@istok/utils';
-import { ERROR, Error, SUCCESS, Success } from '@istok/utils';
+import { Identifiable, ERROR, Error, SUCCESS, Success } from '@istok/utils';
 
+import { ResourceId, Resource, makeResource } from './Resource';
 /*
   Result of operations over Resource that affect whole Resource:
     - set Resource's data
