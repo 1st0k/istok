@@ -4,26 +4,29 @@ import fs from 'fs-extra';
 /*
   Must be executed from the projet's root folder
 */
-export function copyTemplate(src: string, dest: string) {
-  return fs
-    .copy(src, dest)
-    .catch(error => ({
+export async function copyTemplate(template: string, dest: string) {
+  const selfRoot = process.argv[1].replace(/bin\.js$/, '');
+  const templatesRoot = path.resolve(selfRoot, 'templates');
+  const templateRoot = path.resolve(templatesRoot, template);
+
+  try {
+    // We can't await Promise.all because copy of a directory failing with "EEXIST"
+    // It is because the directory is created by copy of a single file
+    await fs.copy(templateRoot, dest);
+    await Promise.all([fs.copy(path.resolve(templatesRoot, 'tsconfig.json'), path.resolve(dest, 'tsconfig.json'))]);
+
+    return { type: 'ok', result: `Created new module from "${template}" template at "${dest}".` };
+  } catch (error) {
+    return {
       type: 'error',
       error,
-    }))
-    .then(result => ({
-      type: 'ok',
-      result,
-    }));
+    };
+  }
 }
 
-export function newModule(name: string) {
-  const selfRoot = process.argv[1].replace(/bin\.js$/, '');
-  const templatesRoot = path.resolve(selfRoot, 'src/templates/module');
+export async function newModule(name: string) {
   const modulesRoot = path.resolve(process.cwd(), 'packages');
   const newModuleRoot = path.resolve(modulesRoot, 'istok-' + name);
-
-  console.log('self root', selfRoot);
 
   try {
     const isDirectoryExist = fs.statSync(newModuleRoot).isDirectory();
@@ -35,5 +38,7 @@ export function newModule(name: string) {
     }
   } catch (e) {}
 
-  return copyTemplate(templatesRoot, path.resolve(newModuleRoot));
+  const result = await copyTemplate('module', path.resolve(newModuleRoot));
+
+  return result;
 }
