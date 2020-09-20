@@ -5,8 +5,8 @@
 */
 
 import { ResourceId, Resource, makeResource } from './Resource';
-import { Identifiable } from './utils/id';
-import { ERROR, Error, SUCCESS, Success } from './utils/Result';
+import { Identifiable } from '@istok/utils';
+import { ERROR, Error, SUCCESS, Success } from '@istok/utils';
 
 /*
   Result of operations over Resource that affect whole Resource:

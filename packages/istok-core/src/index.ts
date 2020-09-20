@@ -1,5 +1,4 @@
 export { Resource, ResourceId, makeResource } from './Resource';
-export { MemorySourceOptions, createMemorySource } from './MemorySource';
 
 export {
   isGetListResultSuccess,
@@ -11,5 +10,5 @@ export {
   Source,
   UniformFiniteSource,
 } from './Source';
-
+export { MemorySourceOptions, createMemorySource } from './MemorySource';
 export { createSourcesSequence } from './SourcesSequence';

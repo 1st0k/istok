@@ -1,6 +1,7 @@
+import { ERROR, SUCCESS } from '@istok/utils';
+
 import { createMemorySource } from './MemorySource';
 import { isGetListResultSuccess, isGetSetResultSuccess, isResultError } from './Source';
-import { ERROR, SUCCESS } from './utils/Result';
 
 describe('MemorySource should get Resource', () => {
   it('if it was added initially', async done => {

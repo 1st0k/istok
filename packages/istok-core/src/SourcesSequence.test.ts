@@ -1,9 +1,10 @@
+import { ERROR, SUCCESS } from '@istok/utils';
+
 import { createSourcesSequence } from './SourcesSequence';
 import { createMemorySource } from './MemorySource';
 import { ERROR_RESOURCE_NOT_EXISTS, isGetListResultSuccess } from './Source';
 
 import { successSource } from './mocks/sources';
-import { ERROR, SUCCESS } from './utils/Result';
 
 it('should throw if no Sources were provided', () => {
   function init() {
