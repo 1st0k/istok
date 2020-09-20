@@ -6,9 +6,10 @@
   "module": "dist/dev-cli.esm.js",
   "typings": "dist/index.d.ts",
   "files": [
+    "bin.js",
     "dist",
     "src",
-    "templates/**/*"
+    "templates/"
   ],
   "bin": {
     "istok-dev": "./bin.js"
