@@ -40,7 +40,7 @@
     "trailingComma": "es5"
   },
   "workspaces": [
-    "packages/**"
+    "packages/*"
   ],
   "publishConfig": {
     "access": "restricted",
