@@ -1,3 +1,3 @@
-# @istok/core
+# @istok/{{MODULE_NAME}}
 
-istok's core entites, types and helpers to make extensions.
+{{MODULE_DESCRIPTION}}

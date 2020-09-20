@@ -1,9 +1,9 @@
 {
-  "version": "0.2.0",
-  "name": "@istok/core",
+  "version": "0.1.0",
+  "name": "@istok/istok-{{MODULE_NAME}}",
   "author": "Alexander \"Snov\" Semenchenko",
   "main": "dist/index.js",
-  "module": "dist/core.esm.js",
+  "module": "dist/{{MODULE_NAME}}.esm.js",
   "typings": "dist/index.d.ts",
   "files": [
     "dist",
@@ -12,7 +12,7 @@
   "repository": {
     "type": "git",
     "url": "git://github.com/1st0k/istok.git",
-    "directory": "packages/istok-core"
+    "directory": "packages/istok-{{MODULE_NAME}}"
   },
   "engines": {
     "node": ">=10"
