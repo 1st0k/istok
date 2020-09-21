@@ -44,7 +44,6 @@
   "dependencies": {
     "@istok/core": "^0.2.1",
     "@types/klaw": "^3.0.1",
-    "@types/ramda": "^0.27.17",
     "chokidar": "^3.4.2",
     "fs-extra": "^9.0.1",
     "klaw": "^3.0.0",
