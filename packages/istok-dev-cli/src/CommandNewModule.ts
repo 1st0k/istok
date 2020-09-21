@@ -10,8 +10,8 @@ export async function copyTemplate(template: string, dest: string) {
   const templateRoot = path.resolve(templatesRoot, template);
 
   try {
-    // We can't await Promise.all because copy of a directory failing with "EEXIST"
-    // It is because the directory is created by copy of a single file
+    // We can't await Promise.all because copy of a directory failing with "EEXIST",
+    // because the directory is already created by copy of a single file.
     await fs.copy(templateRoot, dest);
     await Promise.all([fs.copy(path.resolve(templatesRoot, 'tsconfig.json'), path.resolve(dest, 'tsconfig.json'))]);
 
