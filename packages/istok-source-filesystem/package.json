@@ -1,0 +1,53 @@
+{
+  "version": "0.1.0",
+  "name": "@istok/source-filesystem",
+  "author": "Alexander \"Snov\" Semenchenko",
+  "main": "dist/index.js",
+  "module": "dist/source-filesystem.esm.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src",
+    "tsconfig.json"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/1st0k/istok.git",
+    "directory": "packages/istok-source-filesystem"
+  },
+  "engines": {
+    "node": ">=10"
+  },
+  "scripts": {
+    "start": "tsdx watch",
+    "build": "yarn cross-env NODE_ENV=production tsdx build",
+    "test": "tsdx test --passWithNoTests",
+    "lint": "tsdx lint",
+    "prepare": "yarn build"
+  },
+  "prettier": {
+    "printWidth": 120,
+    "tabWidth": 2,
+    "semi": true,
+    "singleQuote": true,
+    "trailingComma": "es5"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.2",
+    "tsdx": "^0.13.3"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "gitHead": "7617d9ceb82edb5c2421254b0eace4d0ede7a5c3",
+  "dependencies": {
+    "@istok/core": "^0.2.1",
+    "@types/klaw": "^3.0.1",
+    "@types/ramda": "^0.27.17",
+    "chokidar": "^3.4.2",
+    "fs-extra": "^9.0.1",
+    "klaw": "^3.0.0",
+    "through2": "^4.0.2"
+  }
+}
