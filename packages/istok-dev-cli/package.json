@@ -1,5 +1,5 @@
 {
-  "version": "0.2.8",
+  "version": "0.2.9",
   "name": "@istok/dev-cli",
   "author": "Alexander \"Snov\" Semenchenko",
   "main": "dist/index.js",
