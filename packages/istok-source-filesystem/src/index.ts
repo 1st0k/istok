@@ -27,7 +27,7 @@ export function createFilesystemSource<T, E extends string>(opts: FilesystemSour
   }
 
   const DEFAULT_PATH_DELIMETER = '/';
-  const DEFAULT_ID_DELIMETER = '__';
+  const DEFAULT_ID_DELIMETER = '/';
   const pathDelimeterRegExp = new RegExp(`${DEFAULT_PATH_DELIMETER}`, 'g');
   const idDelimeterRegExp = new RegExp(`${DEFAULT_ID_DELIMETER}`, 'g');
 

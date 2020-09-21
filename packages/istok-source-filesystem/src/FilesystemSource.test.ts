@@ -45,20 +45,20 @@ describe('FilesystemSource should get a resource', () => {
 
   it('with sub directories', async done => {
     const fs = createFilesystemSource({ root: MOCK_RESOURCES_ROOT });
-    const resource = await Promise.all([fs.get('res-1__1'), fs.get('res-2__a'), fs.get('non-existing')]);
+    const resource = await Promise.all([fs.get('res-1/1'), fs.get('res-2/a'), fs.get('non-existing')]);
     expect(resource).toMatchInlineSnapshot(`
       Array [
         Object {
           "resource": Object {
             "data": "",
-            "id": "res-1__1",
+            "id": "res-1/1",
           },
           "type": "success",
         },
         Object {
           "resource": Object {
             "data": "",
-            "id": "res-2__a",
+            "id": "res-2/a",
           },
           "type": "success",
         },
@@ -124,22 +124,22 @@ describe('FilesystemSource should get list of resources', () => {
       Object {
         "resources": Array [
           Object {
-            "id": "res-1__1",
+            "id": "res-1/1",
           },
           Object {
-            "id": "res-1__2",
+            "id": "res-1/2",
           },
           Object {
-            "id": "res-1__3",
+            "id": "res-1/3",
           },
           Object {
-            "id": "res-2__a",
+            "id": "res-2/a",
           },
           Object {
-            "id": "res-2__b",
+            "id": "res-2/b",
           },
           Object {
-            "id": "res-2__c",
+            "id": "res-2/c",
           },
         ],
         "type": "success",
