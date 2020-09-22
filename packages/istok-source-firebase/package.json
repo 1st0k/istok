@@ -1,0 +1,50 @@
+{
+  "version": "0.1.0",
+  "name": "@istok/source-firebase",
+  "author": "Alexander \"Snov\" Semenchenko",
+  "main": "dist/index.js",
+  "module": "dist/source-firebase.esm.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src",
+    "tsconfig.json"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/1st0k/istok.git",
+    "directory": "packages/istok-source-firebase"
+  },
+  "engines": {
+    "node": ">=10"
+  },
+  "scripts": {
+    "start": "tsdx watch",
+    "build": "yarn cross-env NODE_ENV=production tsdx build",
+    "test": "tsdx test --passWithNoTests",
+    "lint": "tsdx lint",
+    "prepare": "yarn build"
+  },
+  "prettier": {
+    "printWidth": 120,
+    "tabWidth": 2,
+    "semi": true,
+    "singleQuote": true,
+    "trailingComma": "es5"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.2",
+    "tsdx": "^0.13.3"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "dependencies": {
+    "@firebase/app-types": "^0.6.1",
+    "@google-cloud/firestore": "^4.2.0",
+    "@istok/core": "^0.2.1",
+    "dotenv": "^8.2.0",
+    "firebase-admin": "^9.2.0"
+  }
+}
