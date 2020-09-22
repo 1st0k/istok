@@ -30,7 +30,7 @@ describe('SourcesSequence get resource', () => {
     expect(resource).toMatchObject(
       expect.objectContaining({
         error: ERROR_RESOURCE_NOT_EXISTS,
-        type: ERROR,
+        kind: ERROR,
       })
     );
     done();
@@ -51,7 +51,7 @@ describe('SourcesSequence get resource', () => {
           data: expect.any(String),
           id: expect.any(String),
         }),
-        type: 'success',
+        kind: SUCCESS,
       })
     );
     done();
@@ -75,7 +75,7 @@ describe('SourcesSequence get resource', () => {
           data: expect.any(String),
           id: expect.any(String),
         }),
-        type: SUCCESS,
+        kind: SUCCESS,
       })
     );
     done();

@@ -4,7 +4,15 @@
     - finite resources count at any given moment
 */
 
-import { Identifiable, ERROR, Error, SUCCESS, Success } from '@istok/utils';
+import {
+  Identifiable,
+  ERROR,
+  SUCCESS,
+  ResultSuccess,
+  ResultError,
+  makeResultError as makeResultErrorUtils,
+  makeResultSuccess,
+} from '@istok/utils';
 
 import { ResourceId, Resource, makeResource } from './Resource';
 /*
@@ -12,59 +20,54 @@ import { ResourceId, Resource, makeResource } from './Resource';
     - set Resource's data
     - get Resource
 */
-export type ResourceOpResultSuccess<T> = { type: Success; resource: Resource<T> };
-export type ResourceOpResultError<E extends string> = { type: Error; error: E };
-export type ResourceOpResult<D, E extends string> = ResourceOpResultSuccess<D> | ResourceOpResultError<E>;
+export type ResourceOpResultSuccess<T> = ResultSuccess<{ resource: Resource<T> }>;
+export type ResourceOpResultError<E> = ResultError<E>;
+export type ResourceOpResult<D, E> = ResourceOpResultSuccess<D> | ResourceOpResultError<E>;
 
-export type ResourceOpListResultSuccess = { type: Success; resources: Identifiable<ResourceId>[] };
+export type ResourceOpListResultSuccess = ResultSuccess<{ resources: Identifiable<ResourceId>[] }>;
 
-export type ResourceOpListResult<E extends string> = ResourceOpListResultSuccess | ResourceOpResultError<E>;
+export type ResourceOpListResult<E> = ResourceOpListResultSuccess | ResourceOpResultError<E>;
 
 export const ERROR_RESOURCE_NOT_EXISTS = 'RESOURCE_NOT_EXISTS' as const;
 export type ErrorResourceNotExists = typeof ERROR_RESOURCE_NOT_EXISTS;
 
-export interface UniformFiniteSource<DataType, E extends string = string> {
+export interface UniformFiniteSource<DataType, E> {
   get(resourceId: ResourceId): Promise<ResourceOpResult<DataType, E>>;
   set(resourceId: ResourceId, data: DataType): Promise<ResourceOpResult<DataType, E>>;
 
   getList(): Promise<ResourceOpListResult<E>>;
 }
 
-export type Source<DataType, E extends string = string> = UniformFiniteSource<DataType, E>;
+export type Source<DataType, E> = UniformFiniteSource<DataType, E>;
 
-export function makeResultError<E extends string>(error: E): ResourceOpResultError<E> {
-  return {
-    type: ERROR,
-    error,
-  };
+export function makeResultError<E>(error: E): ResourceOpResultError<E> {
+  return makeResultErrorUtils(error);
 }
 
 export function makeGetSetResultSuccess<T>(id: ResourceId, data: T): ResourceOpResultSuccess<T> {
-  return {
-    type: SUCCESS,
+  return makeResultSuccess({
     resource: makeResource(id, data),
-  };
+  });
 }
 
 export function makeGetListResultSuccees(ids: Identifiable<ResourceId>[]): ResourceOpListResultSuccess {
-  return {
-    type: SUCCESS,
+  return makeResultSuccess({
     resources: ids,
-  };
+  });
 }
 
 // Results with errors has the same type for any operation
 export function isResultError<E extends string>(
   result: ResourceOpResult<unknown, E> | ResourceOpListResult<E>
 ): result is ResourceOpResultError<E> {
-  return result.type === ERROR;
+  return result.kind === ERROR;
 }
 
 // Successful Results for Get/Set and List operations are different
 export function isGetSetResultSuccess<T>(result: ResourceOpResult<T, any>): result is ResourceOpResultSuccess<T> {
-  return result.type === SUCCESS;
+  return result.kind === SUCCESS;
 }
 
 export function isGetListResultSuccess(result: ResourceOpListResult<any>): result is ResourceOpListResultSuccess {
-  return result.type === SUCCESS;
+  return result.kind === SUCCESS;
 }

@@ -1,6 +1,9 @@
 import path from 'path';
 
+import { isGetSetResultSuccess, ResourceOpResultError } from '@istok/core';
+
 import { createFilesystemSource } from '.';
+import { SUCCESS } from '@istok/utils';
 
 const MOCK_RESOURCES_ROOT = path.resolve(__dirname, '../mocks/resources');
 
@@ -18,56 +21,26 @@ describe('FilesystemSource should get a resource', () => {
   it('in root directory', async done => {
     const fs = createFilesystemSource({ root: path.resolve(MOCK_RESOURCES_ROOT, 'res-1') });
     const resource = await Promise.all([fs.get('1'), fs.get('2'), fs.get('non-existing')]);
-    expect(resource).toMatchInlineSnapshot(`
-      Array [
-        Object {
-          "resource": Object {
-            "data": "",
-            "id": "1",
-          },
-          "type": "success",
-        },
-        Object {
-          "resource": Object {
-            "data": "",
-            "id": "2",
-          },
-          "type": "success",
-        },
-        Object {
-          "error": "Resource \\"non-existing\\" (path: \\"C:\\\\projects\\\\dev\\\\1st0k\\\\packages\\\\istok-source-filesystem\\\\mocks\\\\resources\\\\res-1\\\\non-existing\\") is not exist.",
-          "type": "error",
-        },
-      ]
-    `);
+
+    expect(isGetSetResultSuccess(resource[0])).toBe(true);
+    expect(isGetSetResultSuccess(resource[1])).toBe(true);
+    expect(isGetSetResultSuccess(resource[2])).toBe(false);
+
+    expect((resource[2] as ResourceOpResultError<string>).error).toMatch(/is not exist/);
+
     done();
   });
 
   it('with sub directories', async done => {
     const fs = createFilesystemSource({ root: MOCK_RESOURCES_ROOT });
     const resource = await Promise.all([fs.get('res-1/1'), fs.get('res-2/a'), fs.get('non-existing')]);
-    expect(resource).toMatchInlineSnapshot(`
-      Array [
-        Object {
-          "resource": Object {
-            "data": "",
-            "id": "res-1/1",
-          },
-          "type": "success",
-        },
-        Object {
-          "resource": Object {
-            "data": "",
-            "id": "res-2/a",
-          },
-          "type": "success",
-        },
-        Object {
-          "error": "Resource \\"non-existing\\" (path: \\"C:\\\\projects\\\\dev\\\\1st0k\\\\packages\\\\istok-source-filesystem\\\\mocks\\\\resources\\\\non-existing\\") is not exist.",
-          "type": "error",
-        },
-      ]
-    `);
+
+    expect(isGetSetResultSuccess(resource[0])).toBe(true);
+    expect(isGetSetResultSuccess(resource[1])).toBe(true);
+    expect(isGetSetResultSuccess(resource[2])).toBe(false);
+
+    expect((resource[2] as ResourceOpResultError<string>).error).toMatch(/is not exist/);
+
     done();
   });
 });
@@ -80,17 +53,14 @@ it('with custom id to path transform', async done => {
     },
   });
   const resource = await Promise.all([fs.get('res-1||1')]);
-  expect(resource).toMatchInlineSnapshot(`
-    Array [
-      Object {
-        "resource": Object {
-          "data": "",
-          "id": "res-1||1",
-        },
-        "type": "success",
-      },
-    ]
-  `);
+
+  expect(isGetSetResultSuccess(resource[0])).toBe(true);
+  if (isGetSetResultSuccess(resource[0])) {
+    expect(resource[0].resource).toMatchObject({
+      id: expect.stringMatching(/\|\|/),
+      data: expect.any(String),
+    });
+  }
   done();
 });
 
@@ -98,53 +68,30 @@ describe('FilesystemSource should get list of resources', () => {
   it('in root directory', async done => {
     const fs = createFilesystemSource({ root: path.resolve(MOCK_RESOURCES_ROOT, 'res-1') });
     const resources = await fs.getList();
-    expect(resources).toMatchInlineSnapshot(`
-      Object {
-        "resources": Array [
-          Object {
-            "id": "1",
-          },
-          Object {
-            "id": "2",
-          },
-          Object {
-            "id": "3",
-          },
-        ],
-        "type": "success",
-      }
-    `);
+
+    expect(resources).toMatchObject({
+      resources: expect.arrayContaining([
+        expect.objectContaining({
+          id: expect.any(String),
+        }),
+      ]),
+    });
+
     done();
   });
 
   it('with sub directories', async done => {
     const fs = createFilesystemSource({ root: MOCK_RESOURCES_ROOT });
     const resources = await fs.getList();
-    expect(resources).toMatchInlineSnapshot(`
-      Object {
-        "resources": Array [
-          Object {
-            "id": "res-1/1",
-          },
-          Object {
-            "id": "res-1/2",
-          },
-          Object {
-            "id": "res-1/3",
-          },
-          Object {
-            "id": "res-2/a",
-          },
-          Object {
-            "id": "res-2/b",
-          },
-          Object {
-            "id": "res-2/c",
-          },
-        ],
-        "type": "success",
-      }
-    `);
+
+    expect(resources).toMatchObject({
+      resources: expect.arrayContaining([
+        expect.objectContaining({
+          id: expect.any(String),
+        }),
+      ]),
+    });
+
     done();
   });
 
@@ -156,31 +103,15 @@ describe('FilesystemSource should get list of resources', () => {
       },
     });
     const resources = await fs.getList();
-    expect(resources).toMatchInlineSnapshot(`
-      Object {
-        "resources": Array [
-          Object {
-            "id": "res-1||1",
-          },
-          Object {
-            "id": "res-1||2",
-          },
-          Object {
-            "id": "res-1||3",
-          },
-          Object {
-            "id": "res-2||a",
-          },
-          Object {
-            "id": "res-2||b",
-          },
-          Object {
-            "id": "res-2||c",
-          },
-        ],
-        "type": "success",
-      }
-    `);
+
+    expect(resources).toMatchObject({
+      resources: expect.arrayContaining([
+        expect.objectContaining({
+          id: expect.stringMatching(/\|\|/),
+        }),
+      ]),
+    });
+
     done();
   });
 });
@@ -188,29 +119,30 @@ describe('FilesystemSource should get list of resources', () => {
 it.skip('should set resource in existing directory', async done => {
   const fs = createFilesystemSource({ root: MOCK_RESOURCES_ROOT });
   const result = await fs.set('res-1__new', 'hello');
-  expect(result).toMatchInlineSnapshot(`
-    Object {
-      "resource": Object {
-        "data": "hello",
-        "id": "res-1__new",
-      },
-      "type": "success",
-    }
-  `);
+  expect(result).toMatchObject(
+    expect.objectContaining({
+      kind: SUCCESS,
+      resource: expect.objectContaining({
+        data: expect.any(String),
+        id: expect.any(String),
+      }),
+    })
+  );
   done();
 });
 
 it.skip('should create directory for a resource', async done => {
   const fs = createFilesystemSource({ root: MOCK_RESOURCES_ROOT });
   const result = await fs.set('new__resources__directory__resource-1', 'hello');
-  expect(result).toMatchInlineSnapshot(`
-    Object {
-      "resource": Object {
-        "data": "hello",
-        "id": "new__resources__directory__resource-1",
-      },
-      "type": "success",
-    }
-  `);
+  expect(result).toMatchObject(
+    expect.objectContaining({
+      kind: SUCCESS,
+      resource: expect.objectContaining({
+        data: expect.any(String),
+        id: expect.any(String),
+      }),
+    })
+  );
+
   done();
 });

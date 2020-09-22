@@ -28,20 +28,23 @@ export type SourceBehaviour = {
 }; 
 */
 
-type SourcesSequence<DataType, E extends string> = Pick<Source<DataType>, 'get' | 'set'> & {
+type SourcesSequence<DataType, E> = Pick<Source<DataType, E>, 'get' | 'set'> & {
   sources: Source<DataType, E>[];
   getList(sourceIndex?: number): Promise<ResourceOpListResult<E>>;
 };
 
-type SourceSequenceItem<DataType, E extends string> = {
+type SourceSequenceItem<DataType, E> = {
   source: Source<DataType, E>;
 };
 
 export const ERROR_NO_SOURCES = 'NO_SOURCES' as const;
+export type ErrorNoSources = typeof ERROR_NO_SOURCES;
 
-export function createSourcesSequence<DataType, E extends string>(
-  items: SourceSequenceItem<DataType, E>[]
-): SourcesSequence<DataType, E> {
+export type SourceSequenceOpErrors = ErrorNoSources | string;
+
+export function createSourcesSequence<DataType>(
+  items: SourceSequenceItem<DataType, SourceSequenceOpErrors>[]
+): SourcesSequence<DataType, SourceSequenceOpErrors> {
   const sources = items.map(sd => sd.source);
   const sourcesCount = items.length;
   const finalSourceIndex = sourcesCount - 1;
@@ -72,12 +75,13 @@ export function createSourcesSequence<DataType, E extends string>(
       return results[finalSourceIndex];
     },
     async get(resourceId) {
-      let lastResult: ResourceOpResult<DataType, any> = makeResultError(ERROR_NO_SOURCES);
+      let lastResult: ResourceOpResult<DataType, SourceSequenceOpErrors> = makeResultError(ERROR_NO_SOURCES);
       for (let i = 0; i < sourcesCount; i++) {
         lastResult = await items[i].source.get(resourceId);
 
         if (isGetSetResultSuccess(lastResult)) {
           // set resource for previous sources
+
           await setResource(resourceId, lastResult.resource.data, 0, i);
           return lastResult;
         }

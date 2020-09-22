@@ -17,7 +17,7 @@ interface FilesystemSourceOptions {
   idToPath?(id: string, pathDelimeter: string): string;
 }
 
-export function createFilesystemSource<T, E extends string>(opts: FilesystemSourceOptions): UniformFiniteSource<T, E> {
+export function createFilesystemSource<T>(opts: FilesystemSourceOptions): UniformFiniteSource<T, string> {
   const root = opts.root;
 
   const absoluteRootPath = path.resolve(root);
@@ -84,9 +84,9 @@ export function createFilesystemSource<T, E extends string>(opts: FilesystemSour
         return makeGetSetResultSuccess(id, result);
       } catch (error) {
         if (error.code === 'ENOENT') {
-          return makeResultError(`Resource "${id}" (path: "${resourcePath}") is not exist.` as E);
+          return makeResultError(`Resource "${id}" (path: "${resourcePath}") is not exist.`);
         }
-        return makeResultError(`Failed to get Resoruce with id "${id}", path: "${resourcePath}".` as E);
+        return makeResultError(`Failed to get Resoruce with id "${id}", path: "${resourcePath}".`);
       }
     },
     async set(id, data) {
@@ -98,7 +98,7 @@ export function createFilesystemSource<T, E extends string>(opts: FilesystemSour
 
         return makeGetSetResultSuccess(id, data);
       } catch (e) {
-        return makeResultError(`Unable to save Resource "${id}". ${e.toString()}` as E);
+        return makeResultError(`Unable to save Resource "${id}". ${e.toString()}`);
       }
     },
     getList,

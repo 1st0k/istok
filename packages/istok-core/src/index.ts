@@ -9,6 +9,11 @@ export {
   makeResultError,
   Source,
   UniformFiniteSource,
+  ResourceOpResultError,
+  ResourceOpListResult,
+  ResourceOpListResultSuccess,
+  ResourceOpResult,
+  ResourceOpResultSuccess,
 } from './Source';
 export { MemorySourceOptions, createMemorySource } from './MemorySource';
 export { createSourcesSequence } from './SourcesSequence';

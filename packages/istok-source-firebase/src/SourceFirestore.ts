@@ -13,10 +13,10 @@ export type FirestoreSourceOptions = {
   };
 };
 
-export function createFirestoreSource<T, E extends string>({
+export function createFirestoreSource<T>({
   firebase,
   options,
-}: FirestoreSourceOptions): UniformFiniteSource<T, E> {
+}: FirestoreSourceOptions): UniformFiniteSource<T, string> {
   const root = options.root.endsWith('/') ? options.root : `${options.root}/`;
 
   const DEFAULT_PATH_DELIMETER = '__';
@@ -60,18 +60,18 @@ export function createFirestoreSource<T, E extends string>({
           .get();
 
         if (!doc.exists) {
-          return makeResultError(`Resource "${id}" (path: "${resourcePath}") is not exist.` as E);
+          return makeResultError(`Resource "${id}" (path: "${resourcePath}") is not exist.`);
         }
 
         const data = doc.data() as T | undefined;
 
         if (!data) {
-          return makeResultError(`Resource "${id}" (path: "${resourcePath}") has no data.` as E);
+          return makeResultError(`Resource "${id}" (path: "${resourcePath}") has no data.`);
         }
 
         return makeGetSetResultSuccess(id, data);
       } catch (error) {
-        return makeResultError(`Failed to get Resource with id "${id}", path: "${resourcePath}".` as E);
+        return makeResultError(`Failed to get Resource with id "${id}", path: "${resourcePath}".`);
       }
     },
     async set(id, data) {
@@ -87,9 +87,7 @@ export function createFirestoreSource<T, E extends string>({
         }
         return makeGetSetResultSuccess(id, data);
       } catch (e) {
-        return makeResultError(
-          `Failed to set Resource with id "${id}", path: "${resourcePath}: ${e.toString()}".` as E
-        );
+        return makeResultError(`Failed to set Resource with id "${id}", path: "${resourcePath}: ${e.toString()}".`);
       }
     },
     async getList() {
@@ -100,7 +98,7 @@ export function createFirestoreSource<T, E extends string>({
 
         return makeGetListResultSuccees(docs.map(({ id }) => ({ id: pathToId(id, pathDelimeterRegExp) })));
       } catch (e) {
-        return makeResultError(`Failed to get list of resources: ${e.toString()}` as E);
+        return makeResultError(`Failed to get list of resources: ${e.toString()}`);
       }
     },
   };

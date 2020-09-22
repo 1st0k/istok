@@ -1,19 +1,7 @@
-import { Success, Error, SUCCESS, ERROR, ERROR_KEY, SUCCESS_KEY, Result } from './Result';
+import { Success, Error, SUCCESS, ERROR, ResultKind } from './Result';
 
-describe('Results should be distinguishable', () => {
-  it('Success', () => {
-    const result: Success = SUCCESS;
-    expect(result).toBe(SUCCESS_KEY);
-  });
-
-  it('Error', () => {
-    const result: Error = ERROR;
-    expect(result).toBe(ERROR_KEY);
-  });
-});
-
-describe('Results should be comparable', () => {
-  function compare(first: Result, second: Result) {
+describe('ResultKinds should be comparable', () => {
+  function compare(first: ResultKind, second: ResultKind) {
     return first === second;
   }
 

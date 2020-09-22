@@ -13,7 +13,7 @@ describe('MemorySource should get Resource', () => {
 
     const resource = await source.get('resource');
 
-    expect(resource.type).toEqual(SUCCESS);
+    expect(resource.kind).toEqual(SUCCESS);
     if (isGetSetResultSuccess(resource)) {
       expect(resource.resource.data).toBe('resource-value');
     }
@@ -25,7 +25,7 @@ describe('MemorySource should get Resource', () => {
     const source = createMemorySource<string, string>();
 
     const notExistingResource = await source.get('resource');
-    expect(notExistingResource.type).toEqual(ERROR);
+    expect(notExistingResource.kind).toEqual(ERROR);
     if (isResultError(notExistingResource)) {
       expect(notExistingResource.error).toMatchInlineSnapshot(`"RESOURCE_NOT_EXISTS"`);
     }
@@ -33,7 +33,7 @@ describe('MemorySource should get Resource', () => {
     await source.set('resource', 'resource-value');
 
     const resource = await source.get('resource');
-    expect(resource.type).toEqual(SUCCESS);
+    expect(resource.kind).toEqual(SUCCESS);
     if (isGetSetResultSuccess(resource)) {
       expect(resource.resource.data).toBe('resource-value');
     }
