@@ -1,7 +1,13 @@
 import path from 'path';
 import fs from 'fs-extra';
 import walk from 'klaw';
-import { makeGetListResultSuccees, makeGetSetResultSuccess, makeResultError, UniformFiniteSource } from '@istok/core';
+import {
+  makeGetListResultSuccees,
+  makeGetSetResultSuccess,
+  makeResultError,
+  UniformFiniteSource,
+  createIdPathAdapter,
+} from '@istok/core';
 
 export function meta() {
   return {
@@ -26,22 +32,21 @@ export function createFilesystemSource<T>(opts: FilesystemSourceOptions): Unifor
     throw new Error(`Unable to initialize FilesystemSource: directory ${absoluteRootPath} is not exist.`);
   }
 
-  const DEFAULT_PATH_DELIMETER = '/';
-  const DEFAULT_ID_DELIMETER = '/';
-  const pathDelimeterRegExp = new RegExp(`${DEFAULT_PATH_DELIMETER}`, 'g');
-  const idDelimeterRegExp = new RegExp(`${DEFAULT_ID_DELIMETER}`, 'g');
+  const { pathToId, idToPath } = createIdPathAdapter({
+    idDelimeter: '/',
+    pathDelimeter: '/',
+    pathToId:
+      opts.pathToId ??
+      function defaultPathToId(path, pathDelimeterRegExp) {
+        return path.replace(pathDelimeterRegExp, '/');
+      },
 
-  const pathToId =
-    opts.pathToId ??
-    function defaultPathToId(path: string, pathDelimeterRegExp: RegExp) {
-      return path.replace(pathDelimeterRegExp, DEFAULT_ID_DELIMETER);
-    };
-
-  const idToPath =
-    opts.idToPath ??
-    function(id: string, pathDelimeter = DEFAULT_PATH_DELIMETER) {
-      return path.resolve(root, id.replace(idDelimeterRegExp, pathDelimeter));
-    };
+    idToPath:
+      opts.idToPath ??
+      function(id, pathDelimeter, idDelimeterRegExp) {
+        return path.resolve(root, id.replace(idDelimeterRegExp, pathDelimeter));
+      },
+  });
 
   function normalizePath(path: string) {
     return path.replace(/\\/g, '/');
@@ -70,14 +75,14 @@ export function createFilesystemSource<T>(opts: FilesystemSourceOptions): Unifor
 
     return makeGetListResultSuccees(
       filenames.map(filename => {
-        return { id: pathToId(filename.replace(resourcePrefixRegExp, ''), pathDelimeterRegExp) };
+        return { id: pathToId(filename.replace(resourcePrefixRegExp, '')) };
       })
     );
   }
 
   return {
     async get(id) {
-      const resourcePath = idToPath(id, DEFAULT_PATH_DELIMETER);
+      const resourcePath = idToPath(id);
       try {
         const result = ((await fs.readFile(resourcePath)).toString() as unknown) as T;
 
@@ -90,7 +95,7 @@ export function createFilesystemSource<T>(opts: FilesystemSourceOptions): Unifor
       }
     },
     async set(id, data) {
-      const resourcePath = idToPath(id, DEFAULT_PATH_DELIMETER);
+      const resourcePath = idToPath(id);
 
       try {
         await fs.ensureDir(path.dirname(resourcePath));
