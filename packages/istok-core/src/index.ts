@@ -15,5 +15,6 @@ export {
   ResourceOpResult,
   ResourceOpResultSuccess,
 } from './Source';
+export { IdPathAdapterOptions, createIdPathAdapter } from './SourceUtils';
 export { MemorySourceOptions, createMemorySource } from './MemorySource';
 export { createSourcesSequence } from './SourcesSequence';
