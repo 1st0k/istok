@@ -114,6 +114,17 @@ describe('FilesystemSource should get list of resources', () => {
 
     done();
   });
+
+  it('in empty directory', async done => {
+    const fs = createFilesystemSource({ root: path.resolve(MOCK_RESOURCES_ROOT, 'empty') });
+    const resources = await fs.getList();
+
+    expect(resources).toMatchObject({
+      resources: expect.arrayContaining([]),
+    });
+
+    done();
+  });
 });
 
 it.skip('should set resource in existing directory', async done => {

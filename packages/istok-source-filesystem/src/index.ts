@@ -69,15 +69,19 @@ export function createFilesystemSource<T>(opts: FilesystemSourceOptions): Unifor
       });
     }
 
-    const filenames = await getAllFilenames();
+    try {
+      const filenames = await getAllFilenames();
 
-    const resourcePrefixRegExp = new RegExp(`^${normalizePath(path.resolve(root))}\/`, 'gi');
+      const resourcePrefixRegExp = new RegExp(`^${normalizePath(path.resolve(root))}\/`, 'gi');
 
-    return makeGetListResultSuccees(
-      filenames.map(filename => {
-        return { id: pathToId(filename.replace(resourcePrefixRegExp, '')) };
-      })
-    );
+      return makeGetListResultSuccees(
+        filenames.map(filename => {
+          return { id: pathToId(filename.replace(resourcePrefixRegExp, '')) };
+        })
+      );
+    } catch (e) {
+      return makeResultError(`Failed to get list of resources: ${e.toString()}`);
+    }
   }
 
   return {
