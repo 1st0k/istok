@@ -1,0 +1,116 @@
+import { v4 } from 'uuid';
+import { createIdPathAdapter, makeGetListResultSuccees, makeGetSetResultSuccess, Source } from '@istok/core';
+import { makeResultError } from '@istok/utils';
+
+import { FirebaseSourceOptons } from './SourceFirebase';
+
+export type FirebaseStorageSourceOptions = FirebaseSourceOptons<{
+  bucket: string;
+  isPublic?: boolean;
+  debug?: boolean;
+  filter?: RegExp | string;
+}>;
+
+export function createFirebaseStorageSource({
+  firebase,
+  options,
+}: FirebaseStorageSourceOptions): Source<string, string> {
+  // root with trailing slash
+  const rootNormalized = options.root.endsWith('/') ? options.root : options.root + '/';
+
+  const { pathToId, idToPath } = createIdPathAdapter({
+    idDelimeter: '/',
+    pathDelimeter: '/',
+    pathToId:
+      options.pathToId ??
+      function defaultPathToId(path: string, pathDelimeterRegExp: RegExp) {
+        return path.replace(pathDelimeterRegExp, '/');
+      },
+
+    idToPath:
+      options.idToPath ??
+      function(id: string, pathDelimeter, idDelimeterRegExp) {
+        return rootNormalized + id.replace(idDelimeterRegExp, pathDelimeter);
+      },
+  });
+
+  const bucket = firebase.storage().bucket(options.bucket);
+
+  return {
+    get(id) {
+      const resourcePath = idToPath(id);
+      return new Promise(resolve => {
+        const data: Buffer[] = [];
+
+        try {
+          /* const fileStream =  */ bucket
+            .file(resourcePath)
+            .createReadStream()
+            .on('data', chunk => {
+              data.push(chunk);
+            })
+            .on('end', () => {
+              const result = Buffer.concat(data).toString();
+              resolve(makeGetSetResultSuccess(id, result));
+            })
+            .on('error', err => resolve(makeResultError(err.toString())));
+        } catch (err) {
+          resolve(makeResultError(err.toString()));
+        }
+      });
+    },
+    set(id, data) {
+      const resourcePath = idToPath(id);
+      const setOptions = options.isPublic
+        ? ({
+            metadata: {
+              metadata: {
+                firebaseStorageDownloadTokens: v4(),
+              },
+            },
+            predefinedAcl: 'publicRead',
+          } as const)
+        : {};
+
+      return new Promise(resolve => {
+        bucket.file(resourcePath).save(data, setOptions, err => {
+          if (err) {
+            return resolve(makeResultError(err.toString()));
+          }
+          return resolve(makeGetSetResultSuccess(id, data));
+        });
+      });
+    },
+    async getList() {
+      try {
+        const [files] = await bucket.getFiles({
+          prefix: rootNormalized,
+        });
+
+        const filenames = files.map(f => f.name);
+
+        const rootRegExp = new RegExp(`^${rootNormalized}`);
+        const resourceFilter =
+          options.filter instanceof RegExp ? options.filter : new RegExp(`${options.filter ?? '.*(?<!/)'}$`);
+
+        return makeGetListResultSuccees(
+          filenames
+            .filter(f => {
+              // exclude directories and resource that not match suffix
+              const isWithSuffix = resourceFilter.test(f);
+              if (options.debug) {
+                console.log(f, isWithSuffix ? 'is post file' : 'skipped');
+              }
+
+              return isWithSuffix;
+            })
+            .map(f => {
+              return { id: pathToId(f.replace(rootRegExp, '')) };
+            })
+        );
+      } catch (e) {
+        return makeResultError(`Failed to get list of resources: ${e.toString()}`);
+      }
+    },
+  };
+}

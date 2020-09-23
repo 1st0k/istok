@@ -44,7 +44,9 @@
     "@firebase/app-types": "^0.6.1",
     "@google-cloud/firestore": "^4.2.0",
     "@istok/core": "^0.2.2",
+    "@types/uuid": "^8.3.0",
     "dotenv": "^8.2.0",
-    "firebase-admin": "^9.2.0"
+    "firebase-admin": "^9.2.0",
+    "uuid": "^8.3.0"
   }
 }

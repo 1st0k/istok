@@ -1,17 +1,15 @@
 import { UpdateData, DocumentData } from '@google-cloud/firestore';
 
-import { Firebase } from './service';
+import {
+  makeGetListResultSuccees,
+  makeGetSetResultSuccess,
+  makeResultError,
+  UniformFiniteSource,
+  createIdPathAdapter,
+} from '@istok/core';
+import { FirebaseSourceOptons } from './SourceFirebase';
 
-import { makeGetListResultSuccees, makeGetSetResultSuccess, makeResultError, UniformFiniteSource } from '@istok/core';
-
-export type FirestoreSourceOptions = {
-  firebase: Firebase;
-  options: {
-    root: string;
-    pathToId?(path: string, pathDelimeterRegExp: RegExp): string;
-    idToPath?(id: string, pathDelimeter: string): string;
-  };
-};
+export type FirestoreSourceOptions = FirebaseSourceOptons;
 
 export function createFirestoreSource<T>({
   firebase,
@@ -19,22 +17,21 @@ export function createFirestoreSource<T>({
 }: FirestoreSourceOptions): UniformFiniteSource<T, string> {
   const root = options.root.endsWith('/') ? options.root : `${options.root}/`;
 
-  const DEFAULT_PATH_DELIMETER = '__';
-  const DEFAULT_ID_DELIMETER = '/';
-  const pathDelimeterRegExp = new RegExp(`${DEFAULT_PATH_DELIMETER}`, 'g');
-  const idDelimeterRegExp = new RegExp(`${DEFAULT_ID_DELIMETER}`, 'g');
+  const { pathToId, idToPath } = createIdPathAdapter({
+    idDelimeter: '/',
+    pathDelimeter: '__',
+    pathToId:
+      options.pathToId ??
+      function defaultPathToId(path: string, pathDelimeterRegExp: RegExp) {
+        return path.replace(pathDelimeterRegExp, '/');
+      },
 
-  const pathToId =
-    options.pathToId ??
-    function defaultPathToId(path: string, pathDelimeterRegExp: RegExp) {
-      return path.replace(pathDelimeterRegExp, DEFAULT_ID_DELIMETER);
-    };
-
-  const idToPath =
-    options.idToPath ??
-    function(id: string, pathDelimeter = DEFAULT_PATH_DELIMETER) {
-      return root + id.replace(idDelimeterRegExp, pathDelimeter);
-    };
+    idToPath:
+      options.idToPath ??
+      function(id: string, pathDelimeter, idDelimeterRegExp) {
+        return root + id.replace(idDelimeterRegExp, pathDelimeter);
+      },
+  });
 
   // const listenResource: ListenResource<unknown, T> = <D>(location: T, listener: Listener<D>) => {
   //   return firebase
@@ -52,7 +49,7 @@ export function createFirestoreSource<T>({
 
   return {
     async get(id) {
-      const resourcePath = idToPath(id, DEFAULT_PATH_DELIMETER);
+      const resourcePath = idToPath(id);
       try {
         const doc = await firebase
           .firestore()
@@ -75,7 +72,7 @@ export function createFirestoreSource<T>({
       }
     },
     async set(id, data) {
-      const resourcePath = idToPath(id, DEFAULT_PATH_DELIMETER);
+      const resourcePath = idToPath(id);
 
       try {
         const docRef = firebase.firestore().doc(resourcePath);
@@ -96,7 +93,7 @@ export function createFirestoreSource<T>({
         const collectionRef = firebase.firestore().collection(listRoot);
         const docs = await collectionRef.listDocuments();
 
-        return makeGetListResultSuccees(docs.map(({ id }) => ({ id: pathToId(id, pathDelimeterRegExp) })));
+        return makeGetListResultSuccees(docs.map(({ id }) => ({ id: pathToId(id) })));
       } catch (e) {
         return makeResultError(`Failed to get list of resources: ${e.toString()}`);
       }
