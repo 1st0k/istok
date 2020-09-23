@@ -7,6 +7,7 @@ import {
   makeResultError,
   UniformFiniteSource,
   createIdPathAdapter,
+  SourceOptions,
 } from '@istok/core';
 
 export function meta() {
@@ -16,11 +17,8 @@ export function meta() {
   };
 }
 
-interface FilesystemSourceOptions {
-  root: string;
+interface FilesystemSourceOptions extends SourceOptions {
   filter?: RegExp | string;
-  pathToId?(path: string, pathDelimeterRegExp: RegExp): string;
-  idToPath?(id: string, pathDelimeter: string): string;
 }
 
 export function createFilesystemSource<T>(opts: FilesystemSourceOptions): UniformFiniteSource<T, string> {

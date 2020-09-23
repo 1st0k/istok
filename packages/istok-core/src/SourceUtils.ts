@@ -5,6 +5,12 @@ export type IdPathAdapterOptions = {
   idToPath(id: string, pathDelimeter: string, idDelimeterRegExp: RegExp): string;
 };
 
+export interface SourceOptions {
+  root: string;
+  pathToId?: IdPathAdapterOptions['pathToId'];
+  idToPath?: IdPathAdapterOptions['idToPath'];
+}
+
 export function createIdPathAdapter({
   idDelimeter = '/',
   pathDelimeter = '/',
