@@ -1,4 +1,5 @@
 import { isGetSetResultSuccess } from '@istok/core';
+import { ERROR, SUCCESS } from '@istok/utils';
 
 import { startService } from './service';
 import { createFirestoreSource } from './SourceFirestore';
@@ -28,34 +29,26 @@ it.skip('should get a resource', async done => {
   expect(isGetSetResultSuccess(result[1])).toBe(true);
   expect(isGetSetResultSuccess(result[2])).toBe(false);
 
-  expect(result).toMatchInlineSnapshot(`
-    Array [
-      Object {
-        "kind": "success",
-        "resource": Object {
-          "data": Object {
-            "data": "data 420",
-            "pole": "polyshko",
-            "test": "lol kek cheburek",
-          },
-          "id": "doc",
-        },
-      },
-      Object {
-        "kind": "success",
-        "resource": Object {
-          "data": Object {
-            "value": "630",
-          },
-          "id": "resource/with/multipart/id",
-        },
-      },
-      Object {
-        "error": "Resource \\"not-existing\\" (path: \\"test/not-existing\\") is not exist.",
-        "kind": "error",
-      },
-    ]
-  `);
+  expect(result[0] as any).toMatchObject({
+    resource: expect.objectContaining({
+      data: expect.any(Object),
+      id: expect.any(String),
+    }),
+    kind: SUCCESS,
+  });
+
+  expect(result[1] as any).toMatchObject({
+    resource: expect.objectContaining({
+      data: expect.any(Object),
+      id: expect.any(String),
+    }),
+    kind: SUCCESS,
+  });
+
+  expect(result[2] as any).toMatchObject({
+    error: expect.stringMatching(/is not exist/),
+    kind: ERROR,
+  });
 
   done();
 });
