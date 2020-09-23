@@ -7,8 +7,7 @@
   "typings": "dist/index.d.ts",
   "files": [
     "dist",
-    "src",
-    "tsconfig.json"
+    "src"
   ],
   "repository": {
     "type": "git",
