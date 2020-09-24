@@ -192,7 +192,9 @@ describe('SourcesSequence clear', () => {
       },
     ]);
 
-    const results = await Promise.all([ss.get('secondSourceResource'), ss.get('secondSourceResource')]);
+    await ss.clear();
+
+    const results = await Promise.all([ss.get('firstSourceResourceA'), ss.get('secondSourceResource')]);
 
     expect(results[0]).toMatchObject({
       error: ERROR_RESOURCE_NOT_EXISTS,
