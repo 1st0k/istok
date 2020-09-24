@@ -18,3 +18,4 @@ export {
 export { IdPathAdapterOptions, createIdPathAdapter, SourceOptions } from './SourceUtils';
 export { MemorySourceOptions, createMemorySource } from './MemorySource';
 export { createSourcesSequence } from './SourcesSequence';
+export { CachableSource, CachableSourceOptions, CacheLevelOptions, createCachableSource } from './CachableSource';
