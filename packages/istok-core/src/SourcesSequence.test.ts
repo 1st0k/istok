@@ -192,8 +192,6 @@ describe('SourcesSequence clear', () => {
       },
     ]);
 
-    console.log(await ss.clear());
-
     const results = await Promise.all([ss.get('secondSourceResource'), ss.get('secondSourceResource')]);
 
     expect(results[0]).toMatchObject({
