@@ -28,7 +28,7 @@ export type SourceBehaviour = {
 }; 
 */
 
-type SourcesSequence<DataType, E> = Pick<Source<DataType, E>, 'get' | 'set'> & {
+export type SourcesSequence<DataType, E> = Pick<Source<DataType, E>, 'get' | 'set' | 'clear'> & {
   sources: Source<DataType, E>[];
   getList(sourceIndex?: number): Promise<ResourceOpListResult<E>>;
 };
@@ -71,7 +71,7 @@ export function createSourcesSequence<DataType>(
     sources,
     async set(resourceId, data) {
       const results = await setResource(resourceId, data);
-      // return result of final source
+      // return result of operation on final source
       return results[finalSourceIndex];
     },
     async get(resourceId) {
@@ -93,6 +93,15 @@ export function createSourcesSequence<DataType>(
         throw new Error(`Incorrect sourceIndex "${sourceIndex}", expected value from 0 to ${finalSourceIndex}`);
       }
       return sources[sourceIndex].getList();
+    },
+    async clear() {
+      const futureResults: Promise<ResourceOpListResult<string>>[] = [];
+      for (const source of sources) {
+        futureResults.push(source.clear());
+      }
+      const results = await Promise.all(futureResults);
+      // return result of operation on final source
+      return results[results.length - 1];
     },
   };
 }

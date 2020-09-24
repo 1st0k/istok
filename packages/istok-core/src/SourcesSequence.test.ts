@@ -180,3 +180,30 @@ describe('SourcesSequence getList', () => {
     done();
   });
 });
+
+describe('SourcesSequence clear', () => {
+  it('should remove all resources from every source', async done => {
+    const ss = createSourcesSequence([
+      {
+        source: createMemorySource({ initialResources: { firstSourceResourceA: 69, firstSourceResourceB: 69 } }),
+      },
+      {
+        source: createMemorySource({ initialResources: { secondSourceResource: 420 } }),
+      },
+    ]);
+
+    console.log(await ss.clear());
+
+    const results = await Promise.all([ss.get('secondSourceResource'), ss.get('secondSourceResource')]);
+
+    expect(results[0]).toMatchObject({
+      error: ERROR_RESOURCE_NOT_EXISTS,
+    });
+
+    expect(results[1]).toMatchObject({
+      error: ERROR_RESOURCE_NOT_EXISTS,
+    });
+
+    done();
+  });
+});
