@@ -22,7 +22,7 @@ describe('MemorySource should get Resource', () => {
   });
 
   it('if it was added later', async done => {
-    const source = createMemorySource<string, string>();
+    const source = createMemorySource<string>();
 
     const notExistingResource = await source.get('resource');
     expect(notExistingResource.kind).toEqual(ERROR);
@@ -97,6 +97,25 @@ describe('MemorySource should get Resources list', () => {
       expect(list.resources.length).toBe(2);
       expect(list.resources).toEqual(expect.arrayContaining([{ id: 'a' }, { id: 'b' }]));
     }
+
+    done();
+  });
+});
+
+describe('MemorySource should clear resources', () => {
+  it('if resources were added initially', async done => {
+    const source = createMemorySource({
+      initialResources: {
+        resource1: 'resource-value-1',
+        resource2: 'resource-value-2',
+      },
+    });
+
+    const result = await source.clear();
+
+    expect(isGetListResultSuccess(result)).toEqual(true);
+
+    expect((result as any).resources).toMatchObject(expect.arrayContaining([]));
 
     done();
   });

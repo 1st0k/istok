@@ -36,6 +36,7 @@ export interface UniformFiniteSource<DataType, E> {
   set(resourceId: ResourceId, data: DataType): Promise<ResourceOpResult<DataType, E>>;
 
   getList(): Promise<ResourceOpListResult<E>>;
+  clear(): Promise<ResourceOpListResult<E>>;
 }
 
 export type Source<DataType, E> = UniformFiniteSource<DataType, E>;

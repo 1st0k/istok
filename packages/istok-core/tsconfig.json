@@ -5,6 +5,7 @@
     "types"
   ],
   "compilerOptions": {
+    "downlevelIteration": true,
     "target": "es5",
     "module": "esnext",
     "lib": [

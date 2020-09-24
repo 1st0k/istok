@@ -1,5 +1,3 @@
-import clone from 'ramda/src/clone';
-
 import { ResourceId } from './Resource';
 import {
   makeResultError,
@@ -13,26 +11,36 @@ export type MemorySourceOptions<T> = {
   initialResources?: Record<ResourceId, T>;
 };
 
-export function createMemorySource<T, E extends string>({
-  initialResources = {},
-}: MemorySourceOptions<T> = {}): UniformFiniteSource<T, E> {
-  const resources = clone(initialResources);
+export function createMemorySource<T>({ initialResources = {} }: MemorySourceOptions<T> = {}): UniformFiniteSource<
+  T,
+  string
+> {
+  const resources = new Map(Object.entries(initialResources));
 
   return {
     async get(id) {
-      if (typeof resources[id] === 'undefined') {
-        return makeResultError(ERROR_RESOURCE_NOT_EXISTS as E);
+      if (!resources.has(id)) {
+        return makeResultError(ERROR_RESOURCE_NOT_EXISTS);
       }
 
-      return makeGetSetResultSuccess(id, resources[id]);
+      return makeGetSetResultSuccess(id, resources.get(id)!);
     },
     async set(id, data) {
-      resources[id] = data;
+      resources.set(id, data);
 
       return makeGetSetResultSuccess(id, data);
     },
-    getList() {
-      return Promise.resolve(makeGetListResultSuccees(Object.keys(resources).map(k => ({ id: k }))));
+    async getList() {
+      const list: { id: ResourceId }[] = [];
+      for (const k of resources.keys()) {
+        list.push({ id: k });
+      }
+
+      return makeGetListResultSuccees(list);
+    },
+    async clear() {
+      resources.clear();
+      return this.getList();
     },
   };
 }
