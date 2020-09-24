@@ -1,4 +1,5 @@
 import path from 'path';
+import fs from 'fs-extra';
 
 import { isGetSetResultSuccess, ResourceOpResultError } from '@istok/core';
 
@@ -154,6 +155,22 @@ it.skip('should create directory for a resource', async done => {
       }),
     })
   );
+
+  done();
+});
+
+it.skip('should clear list of resources', async done => {
+  const root = path.resolve(MOCK_RESOURCES_ROOT, 'to-remove');
+  await fs.ensureDir(root);
+
+  const source = createFilesystemSource({ root });
+
+  await source.clear();
+  const result = await source.getList();
+
+  expect(result).toMatchObject({
+    resources: expect.arrayContaining([]),
+  });
 
   done();
 });

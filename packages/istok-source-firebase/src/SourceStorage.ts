@@ -112,5 +112,16 @@ export function createFirebaseStorageSource({
         return makeResultError(`Failed to get list of resources: ${e.toString()}`);
       }
     },
+    async clear() {
+      try {
+        await bucket.deleteFiles({
+          prefix: `${rootNormalized}`,
+        });
+
+        return makeGetListResultSuccees([]);
+      } catch (e) {
+        return makeResultError(`Failed to clear resources at "${rootNormalized}": ${e.toString()}`);
+      }
+    },
   };
 }

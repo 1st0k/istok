@@ -109,5 +109,17 @@ export function createFilesystemSource<T>(opts: FilesystemSourceOptions): Unifor
       }
     },
     getList,
+    async clear() {
+      try {
+        // remove the directory with all content
+        await fs.remove(absoluteRootPath);
+        // recreate empty directory
+        await fs.mkdir(absoluteRootPath);
+
+        return makeGetListResultSuccees([]);
+      } catch (e) {
+        return makeResultError(`Failed to clear resources at "${absoluteRootPath}": ${e.toString()}`);
+      }
+    },
   };
 }

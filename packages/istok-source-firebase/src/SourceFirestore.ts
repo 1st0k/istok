@@ -98,5 +98,19 @@ export function createFirestoreSource<T>({
         return makeResultError(`Failed to get list of resources: ${e.toString()}`);
       }
     },
+    async clear() {
+      const listRoot = root.slice(0, -1);
+      try {
+        const docs = await firebase
+          .firestore()
+          .collection(listRoot)
+          .listDocuments();
+
+        await Promise.all(docs.map(doc => doc.delete()));
+        return makeGetListResultSuccees([]);
+      } catch (e) {
+        return makeResultError(`Failed to clear resources: ${e.toString()}`);
+      }
+    },
   };
 }

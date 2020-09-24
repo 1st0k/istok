@@ -92,3 +92,21 @@ it.skip('should get list of resources', async done => {
 
   done();
 });
+
+it.skip('should clear list of resources', async done => {
+  const source = createFirestoreSource({
+    firebase: startFirebaseService(),
+    options: {
+      root: 'test-remove',
+    },
+  });
+
+  await source.clear();
+  const result = await source.getList();
+
+  expect(result).toMatchObject({
+    resources: expect.arrayContaining([]),
+  });
+
+  done();
+});
