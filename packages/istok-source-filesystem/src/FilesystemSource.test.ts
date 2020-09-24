@@ -1,7 +1,7 @@
 import path from 'path';
 import fs from 'fs-extra';
 
-import { isGetSetResultSuccess, ResourceOpResultError } from '@istok/core';
+import { isGetListResultSuccess, isGetSetResultSuccess, ResourceOpResultError } from '@istok/core';
 
 import { createFilesystemSource } from '.';
 import { SUCCESS } from '@istok/utils';
@@ -116,13 +116,14 @@ describe('FilesystemSource should get list of resources', () => {
     done();
   });
 
-  it('in empty directory', async done => {
-    const fs = createFilesystemSource({ root: path.resolve(MOCK_RESOURCES_ROOT, 'empty') });
-    const resources = await fs.getList();
+  it('with exclude by RegExp', async done => {
+    const fs = createFilesystemSource({ root: path.resolve(MOCK_RESOURCES_ROOT, 'empty'), exclude: /\.gitkeep/ });
+    const result = await fs.getList();
 
-    expect(resources).toMatchObject({
-      resources: expect.arrayContaining([]),
-    });
+    expect(isGetListResultSuccess(result)).toBe(true);
+
+    expect((result as any).resources).toBeInstanceOf(Array);
+    expect((result as any).resources.length).toBe(0);
 
     done();
   });

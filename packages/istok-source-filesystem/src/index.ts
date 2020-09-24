@@ -18,7 +18,7 @@ export function meta() {
 }
 
 interface FilesystemSourceOptions extends SourceOptions {
-  filter?: RegExp | string;
+  exclude?: RegExp | string;
 }
 
 export function createFilesystemSource<T>(opts: FilesystemSourceOptions): UniformFiniteSource<T, string> {
@@ -50,6 +50,8 @@ export function createFilesystemSource<T>(opts: FilesystemSourceOptions): Unifor
     return path.replace(/\\/g, '/');
   }
 
+  const resourcePrefixRegExp = new RegExp(`^${normalizePath(path.resolve(root))}\/`, 'gi');
+
   async function getList() {
     function getAllFilenames() {
       const files: string[] = [];
@@ -57,7 +59,19 @@ export function createFilesystemSource<T>(opts: FilesystemSourceOptions): Unifor
         walk(root)
           .on('data', d => {
             if (d.stats.isFile()) {
-              files.push(normalizePath(d.path));
+              const normalizedPath = normalizePath(d.path).replace(resourcePrefixRegExp, '');
+              const exclude =
+                opts.exclude instanceof RegExp
+                  ? opts.exclude
+                  : typeof opts.exclude === 'string'
+                  ? new RegExp(`${opts.exclude}`)
+                  : null;
+
+              if (exclude && exclude.test(normalizedPath)) {
+                return;
+              }
+
+              files.push(normalizedPath);
             }
           })
           .on('error', e => rej(e))
@@ -70,11 +84,9 @@ export function createFilesystemSource<T>(opts: FilesystemSourceOptions): Unifor
     try {
       const filenames = await getAllFilenames();
 
-      const resourcePrefixRegExp = new RegExp(`^${normalizePath(path.resolve(root))}\/`, 'gi');
-
       return makeGetListResultSuccees(
         filenames.map(filename => {
-          return { id: pathToId(filename.replace(resourcePrefixRegExp, '')) };
+          return { id: pathToId(filename) };
         })
       );
     } catch (e) {
