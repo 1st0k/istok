@@ -24,6 +24,12 @@ jobs:
             nodeModules-
 
       - name: Install dependencies
+        run: yarn install --immutable
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+          CI: true
+
+      - name: Bootstrap Lerna
         run: yarn lerna bootstrap --ci --ignore-prepublish --force-local
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
