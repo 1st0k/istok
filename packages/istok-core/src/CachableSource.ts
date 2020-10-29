@@ -25,7 +25,7 @@ export function createCachableSource<DataType>({
   }
   const seq = createSourcesSequence([...caches.map(cache => ({ source: cache.source })), { source }]);
 
-  const invalidationHandlers: NodeJS.Timeout[] = [];
+  const invalidationHandlers: ReturnType<typeof setInterval>[] = [];
 
   async function invalidateOnInit() {
     const clearPromises: Promise<ResourceOpListResult<string>>[] = [];
