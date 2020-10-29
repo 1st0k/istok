@@ -31,11 +31,13 @@ export type ResourceOpListResult<E> = ResourceOpListResultSuccess | ResourceOpRe
 export const ERROR_RESOURCE_NOT_EXISTS = 'RESOURCE_NOT_EXISTS' as const;
 export type ErrorResourceNotExists = typeof ERROR_RESOURCE_NOT_EXISTS;
 
+export type ResourceListFilter = (id: ResourceId) => boolean;
+
 export interface UniformFiniteSource<DataType, E> {
   get(resourceId: ResourceId): Promise<ResourceOpResult<DataType, E>>;
   set(resourceId: ResourceId, data: DataType): Promise<ResourceOpResult<DataType, E>>;
 
-  getList(): Promise<ResourceOpListResult<E>>;
+  getList(filter?: ResourceListFilter): Promise<ResourceOpListResult<E>>;
   clear(): Promise<ResourceOpListResult<E>>;
 }
 

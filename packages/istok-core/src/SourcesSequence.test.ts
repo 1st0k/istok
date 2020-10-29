@@ -167,7 +167,7 @@ describe('SourcesSequence getList', () => {
       },
     ]);
 
-    const list = await ss.getList(0);
+    const list = await ss.getList(() => true, 0);
 
     expect(isGetListResultSuccess(list)).toBe(true);
 

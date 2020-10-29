@@ -17,7 +17,14 @@
 */
 
 import { ResourceId } from './Resource';
-import { isGetSetResultSuccess, makeResultError, ResourceOpListResult, ResourceOpResult, Source } from './Source';
+import {
+  isGetSetResultSuccess,
+  makeResultError,
+  ResourceListFilter,
+  ResourceOpListResult,
+  ResourceOpResult,
+  Source,
+} from './Source';
 
 // TODO: per Source behaviour can be useful for custom strategies
 /* 
@@ -30,7 +37,7 @@ export type SourceBehaviour = {
 
 export type SourcesSequence<DataType, E> = Pick<Source<DataType, E>, 'get' | 'set' | 'clear'> & {
   sources: Source<DataType, E>[];
-  getList(sourceIndex?: number): Promise<ResourceOpListResult<E>>;
+  getList(filer?: ResourceListFilter, sourceIndex?: number): Promise<ResourceOpListResult<E>>;
 };
 
 type SourceSequenceItem<DataType, E> = {
@@ -88,11 +95,11 @@ export function createSourcesSequence<DataType>(
       }
       return lastResult;
     },
-    async getList(sourceIndex: number = finalSourceIndex) {
+    async getList(filter?: ResourceListFilter, sourceIndex: number = finalSourceIndex) {
       if (sourceIndex < 0 || sourceIndex > finalSourceIndex) {
         throw new Error(`Incorrect sourceIndex "${sourceIndex}", expected value from 0 to ${finalSourceIndex}`);
       }
-      return sources[sourceIndex].getList();
+      return sources[sourceIndex].getList(filter);
     },
     async clear() {
       const futureResults: Promise<ResourceOpListResult<string>>[] = [];

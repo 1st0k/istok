@@ -100,6 +100,28 @@ describe('MemorySource should get Resources list', () => {
 
     done();
   });
+
+  it('with filter', async done => {
+    const source = createMemorySource({
+      initialResources: {
+        a: 'resource-a',
+        b: 'resource-b',
+        c: 'resource-c',
+      },
+    });
+
+    const list = await source.getList(id => id !== 'c');
+
+    expect(isGetListResultSuccess(list)).toBe(true);
+
+    if (isGetListResultSuccess(list)) {
+      expect(list.resources).toBeInstanceOf(Array);
+      expect(list.resources.length).toBe(2);
+      expect(list.resources).toEqual(expect.arrayContaining([{ id: 'a' }, { id: 'b' }]));
+    }
+
+    done();
+  });
 });
 
 describe('MemorySource should clear resources', () => {

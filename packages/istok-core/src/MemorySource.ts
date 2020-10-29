@@ -30,9 +30,12 @@ export function createMemorySource<T>({ initialResources = {} }: MemorySourceOpt
 
       return makeGetSetResultSuccess(id, data);
     },
-    async getList() {
+    async getList(filter) {
       const list: { id: ResourceId }[] = [];
       for (const k of resources.keys()) {
+        if (filter && !filter(k)) {
+          continue;
+        }
         list.push({ id: k });
       }
 

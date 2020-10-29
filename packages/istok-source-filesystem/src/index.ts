@@ -8,6 +8,7 @@ import {
   UniformFiniteSource,
   createIdPathAdapter,
   SourceOptions,
+  ResourceListFilter,
 } from '@istok/core';
 
 export function meta() {
@@ -52,7 +53,7 @@ export function createFilesystemSource<T>(opts: FilesystemSourceOptions): Unifor
 
   const resourcePrefixRegExp = new RegExp(`^${normalizePath(path.resolve(root))}\/`, 'gi');
 
-  async function getList() {
+  async function getList(filter: ResourceListFilter) {
     function getAllFilenames() {
       const files: string[] = [];
       return new Promise<string[]>((res, rej) => {
@@ -85,9 +86,10 @@ export function createFilesystemSource<T>(opts: FilesystemSourceOptions): Unifor
       const filenames = await getAllFilenames();
 
       return makeGetListResultSuccees(
-        filenames.map(filename => {
-          return { id: pathToId(filename) };
-        })
+        filenames
+          .map(filename => pathToId(filename))
+          .filter(id => (filter ? filter(id) : true))
+          .map(id => ({ id }))
       );
     } catch (e) {
       return makeResultError(`Failed to get list of resources: ${e.toString()}`);
