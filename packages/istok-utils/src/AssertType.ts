@@ -1,6 +1,6 @@
 export function assertType<T>(arg: unknown, target: T): asserts arg is typeof target {
   if (typeof arg !== typeof target) {
-    throw new Error(`Command's argument type mismatch: expected "${typeof target}", but got "${typeof arg}".`);
+    throw new Error(`Type mismatch: expected "${typeof target}", but got "${typeof arg}".`);
   }
 }
 
