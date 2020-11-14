@@ -1,5 +1,5 @@
 {
-  "version": "0.3.4",
+  "version": "0.3.5",
   "name": "@istok/cli",
   "author": "Alexander \"Snov\" Semenchenko",
   "main": "dist/index.js",
@@ -35,7 +35,7 @@
     "trailingComma": "es5"
   },
   "dependencies": {
-    "@istok/core": "^0.5.3"
+    "@istok/core": "^0.5.4"
   },
   "devDependencies": {
     "cross-env": "^7.0.2",
