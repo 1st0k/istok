@@ -2,10 +2,7 @@ import { CallExpression, Identifier } from '@babel/types';
 import { PluginObj } from '@babel/core';
 
 function isCallableExpression(expression: unknown): expression is CallExpression {
-  if (typeof (expression as CallExpression).callee !== 'undefined') {
-    return true;
-  }
-  return false;
+  return typeof (expression as CallExpression).callee !== 'undefined';
 }
 
 export default function BabelPluginMdxBrowser(): PluginObj {
