@@ -24,7 +24,7 @@ export function render(options: RenderOptions) {
   const values = Object.values(fullScope);
 
   const executor = wrapInProvider
-    ? makeExecutor(`MDXProvider, { components }, React.createElement(MDXContent, {})`)
+    ? makeExecutor(`MDXProvider, { components }, ${makeElement('MDXContent, {}')}`)
     : makeExecutor(`MDXContent, {}`);
 
   const hydratedFn = new Function('React', ...keys, `${compiledSource}${executor}`);
