@@ -10,7 +10,7 @@ type HydrationOptions = {
 
 export function useHydrate<S extends Scope = {}>(
   { compiledSource, contentHtml, scope = {} as S }: HydrationData<S>,
-  { components }: HydrationContext = {},
+  context: HydrationContext = {},
   { element = 'div' }: HydrationOptions
 ) {
   const [result, setResult] = useState<JSX.Element>(
@@ -30,8 +30,8 @@ export function useHydrate<S extends Scope = {}>(
       // markdown components (such as "h1" or "a") with the "components" object
       const wrappedWithMdxProvider = createElement(
         MDXProvider,
-        { components },
-        render({ compiledSource, scope, context: { components }, wrapInProvider: false })
+        context,
+        render({ compiledSource, scope, context, wrapInProvider: false })
       );
 
       setResult(wrappedWithMdxProvider);
