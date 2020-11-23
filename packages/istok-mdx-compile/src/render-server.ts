@@ -19,19 +19,18 @@ export async function render<S extends Scope>(
   }
 ) {
   const [compiledSource, laterCompiledSource] = await compile(source, compileOptions);
+  const rendered = await renderCore({
+    compiledSource,
+    scope,
+    context: {
+      components,
+    },
+    wrapInProvider: true,
+  });
 
   return {
     compiledSource: laterCompiledSource,
-    contentHtml: reactRenderToString(
-      renderCore({
-        compiledSource,
-        scope,
-        context: {
-          components,
-        },
-        wrapInProvider: true,
-      })
-    ),
+    contentHtml: reactRenderToString(rendered),
     scope,
   };
 }
