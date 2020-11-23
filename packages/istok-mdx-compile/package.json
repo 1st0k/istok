@@ -1,5 +1,5 @@
 {
-  "version": "0.2.3",
+  "version": "0.2.4",
   "name": "@istok/mdx-compile",
   "author": "Alexander \"Snov\" Semenchenko",
   "main": "dist/index.js",
@@ -51,7 +51,7 @@
     "@babel/core": "^7.12.3",
     "@babel/preset-env": "^7.12.1",
     "@babel/preset-react": "^7.12.5",
-    "@istok/mdx-render": "^0.6.3",
+    "@istok/mdx-render": "^0.6.4",
     "@mdx-js/mdx": "^1.6.21"
   }
 }
