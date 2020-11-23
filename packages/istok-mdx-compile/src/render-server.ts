@@ -1,5 +1,6 @@
 import { renderToString as reactRenderToString } from 'react-dom/server';
 import { render as renderCore } from '@istok/mdx-render';
+import { AsyncComponentsLoadConfig } from '@istok/mdx-render/dist/load-components';
 
 import { Scope, DEFAULT_COMPILE_OPTIONS, CompileOptions, compile } from './compile';
 
@@ -7,6 +8,7 @@ export interface RenderToStringOptions<S extends Scope> {
   components?: {
     [k: string]: React.ComponentType;
   };
+  promisedComponents?: AsyncComponentsLoadConfig;
   scope?: S;
   compileOptions: CompileOptions;
 }
@@ -14,7 +16,7 @@ export interface RenderToStringOptions<S extends Scope> {
 // https://github.com/hashicorp/next-mdx-remote/blob/master/render-to-string.js
 export async function render<S extends Scope>(
   source: string,
-  { components, compileOptions, scope = {} as S }: RenderToStringOptions<S> = {
+  { components, promisedComponents, compileOptions, scope = {} as S }: RenderToStringOptions<S> = {
     compileOptions: DEFAULT_COMPILE_OPTIONS,
   }
 ) {
@@ -24,6 +26,7 @@ export async function render<S extends Scope>(
     scope,
     context: {
       components,
+      promisedComponents,
     },
     wrapInProvider: true,
   });
