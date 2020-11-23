@@ -24,7 +24,7 @@ export async function render(options: RenderOptions) {
     ...(await loadComponents(context.promisedComponents)),
   };
 
-  const fullScope = { mdx, components, MDXProvider, ...scope };
+  const fullScope = wrapInProvider ? { mdx, MDXProvider, components, ...scope } : { mdx, ...components, ...scope };
   const keys = Object.keys(fullScope);
   const values = Object.values(fullScope);
 
