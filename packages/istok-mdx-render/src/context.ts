@@ -1,3 +1,4 @@
+import { ElementType } from 'react';
 import { AsyncComponentsLoadConfig } from './load-components';
 
 export type Scope = {
@@ -11,6 +12,6 @@ export interface HydrationData<S extends Scope> {
 }
 
 export type HydrationContext = {
-  components?: Record<string, React.ComponentType>;
+  components?: Record<string, ElementType>;
   promisedComponents?: AsyncComponentsLoadConfig;
 };

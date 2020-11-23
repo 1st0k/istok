@@ -1,7 +1,18 @@
+import { createElement, ElementType } from 'react';
 import { render } from './render-server';
 
+const mdx = `
+# hey yo
+
+<Async>LOL</Async>
+`;
+
 it('should transform code', async done => {
-  const result = await render(`# hey yo`);
+  const result = await render(mdx, {
+    promisedComponents: {
+      Async: () => Promise.resolve(({ children }: { children: ElementType }) => createElement('div', {}, children)),
+    },
+  });
 
   expect(result).toMatchInlineSnapshot(`
     Object {
@@ -26,12 +37,14 @@ it('should transform code', async done => {
       return mdx(MDXLayout, _extends({}, layoutProps, props, {
         components: components,
         mdxType: \\"MDXLayout\\"
-      }), mdx(\\"h1\\", null, \\"hey yo\\"));
+      }), mdx(\\"h1\\", null, \\"hey yo\\"), mdx(Async, {
+        mdxType: \\"Async\\"
+      }, \\"LOL\\"));
     }
 
     ;
     MDXContent.isMDXComponent = true;",
-      "contentHtml": "<h1>hey yo</h1>",
+      "contentHtml": "<h1>hey yo</h1><div>LOL</div>",
       "scope": Object {},
     }
   `);
