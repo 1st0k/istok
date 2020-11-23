@@ -18,11 +18,30 @@ export async function render(options: RenderOptions) {
   const { compiledSource, scope, wrapInProvider } = options;
   const { context = {} } = options;
 
-  const awaitedComponents = context.promisedComponents ? await context.promisedComponents() : {};
+  async function awaitComponents() {
+    const components = context.promisedComponents;
+    if (!components) {
+      return {};
+    }
+
+    const promisedComponentsNames = Object.keys(components);
+
+    const awaitedComponents: Array<Promise<React.ComponentType>> = promisedComponentsNames.map(name => {
+      return components[name]();
+    });
+
+    try {
+      const result = await Promise.all(awaitedComponents);
+      return result;
+    } catch (e) {
+      console.log(`failed to load components:\n`, e);
+      return {};
+    }
+  }
 
   const components = {
     ...(context.components ?? {}),
-    ...awaitedComponents,
+    ...(await awaitComponents()),
   };
 
   const fullScope = { mdx, components, MDXProvider, ...scope };
