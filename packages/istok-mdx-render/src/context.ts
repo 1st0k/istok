@@ -9,5 +9,6 @@ export interface HydrationData<S extends Scope> {
 }
 
 export type HydrationContext = {
-  components?: any;
+  components?: Record<string, React.ComponentType>;
+  promisedComponents?: () => Promise<Record<string, React.ComponentType>>;
 };

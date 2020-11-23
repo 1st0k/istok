@@ -25,14 +25,11 @@ export function useHydrate<S extends Scope = {}>(
   // if (typeof window === 'undefined') return result;
 
   useEffect(() => {
-    const handle = window.requestIdleCallback(() => {
+    const handle = window.requestIdleCallback(async () => {
+      const rendered = await render({ compiledSource, scope, context, wrapInProvider: false });
       // wrapping the content with MDXProvider will allow us to customize the standard
       // markdown components (such as "h1" or "a") with the "components" object
-      const wrappedWithMdxProvider = createElement(
-        MDXProvider,
-        context,
-        render({ compiledSource, scope, context, wrapInProvider: false })
-      );
+      const wrappedWithMdxProvider = createElement(MDXProvider, context, rendered);
 
       setResult(wrappedWithMdxProvider);
 

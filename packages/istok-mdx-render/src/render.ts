@@ -14,10 +14,16 @@ type RenderOptions = {
   wrapInProvider?: boolean;
 };
 
-export function render(options: RenderOptions) {
+export async function render(options: RenderOptions) {
   const { compiledSource, scope, wrapInProvider } = options;
   const { context = {} } = options;
-  const { components = {} } = context;
+
+  const awaitedComponents = context.promisedComponents ? await context.promisedComponents() : {};
+
+  const components = {
+    ...(context.components ?? {}),
+    ...awaitedComponents,
+  };
 
   const fullScope = { mdx, components, MDXProvider, ...scope };
   const keys = Object.keys(fullScope);
@@ -27,7 +33,7 @@ export function render(options: RenderOptions) {
     ? makeExecutor(`MDXProvider, { components }, ${makeElement('MDXContent, {}')}`)
     : makeExecutor(`MDXContent, {}`);
 
-  const hydratedFn = new Function('React', ...keys, `${compiledSource}${executor}`);
+  const renderMDX = new Function('React', ...keys, `${compiledSource}${executor}`);
 
-  return hydratedFn(React, ...values);
+  return renderMDX(React, ...values);
 }
