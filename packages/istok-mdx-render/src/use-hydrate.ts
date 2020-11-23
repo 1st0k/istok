@@ -3,6 +3,7 @@ import { MDXProvider } from '@mdx-js/react';
 
 import { Scope, HydrationContext, HydrationData } from './context';
 import { render } from './render';
+import { loadComponents } from './load-components';
 
 type HydrationOptions = {
   element?: 'div' | 'span';
@@ -26,10 +27,20 @@ export function useHydrate<S extends Scope = {}>(
 
   useEffect(() => {
     const handle = window.requestIdleCallback(async () => {
-      const rendered = await render({ compiledSource, scope, context, wrapInProvider: false });
+      // we are not wrapping in Provider, so can pass no context
+      const rendered = await render({ compiledSource, scope, context: {}, wrapInProvider: false });
       // wrapping the content with MDXProvider will allow us to customize the standard
       // markdown components (such as "h1" or "a") with the "components" object
-      const wrappedWithMdxProvider = createElement(MDXProvider, context, rendered);
+      const wrappedWithMdxProvider = createElement(
+        MDXProvider,
+        {
+          components: {
+            ...(context.components ?? {}),
+            ...(await loadComponents(context.promisedComponents)),
+          },
+        },
+        rendered
+      );
 
       setResult(wrappedWithMdxProvider);
 
