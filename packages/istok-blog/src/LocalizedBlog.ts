@@ -37,6 +37,10 @@ export function idToSlug(id: string) {
   return slug;
 }
 
+export const paramsToId = (extension: string) => ({ params, locale }: LocalizedBlogParams): string => {
+  return params.slug.join('/') + '/' + locale + extension;
+};
+
 export const idToPathParams: IdToParams<LocalizedBlogParams> = id => {
   return {
     params: {

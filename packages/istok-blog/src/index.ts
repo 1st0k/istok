@@ -1,12 +1,14 @@
 import { SourcesSequence, ResourceListFilter, isGetListResultSuccess, isGetSetResultSuccess } from '@istok/core';
 import { Identifiable } from '@istok/utils';
 
-export { idToLocale, idToSlug, LocalizedBlogParams, idToPathParams } from './LocalizedBlog';
+export { idToLocale, idToSlug, LocalizedBlogParams, idToPathParams, paramsToId } from './LocalizedBlog';
 
 export type IdToParams<P extends object> = (id: string) => P;
+export type ParamsToId<P extends object> = (params: P) => string;
 
 export interface BlogOptions<P extends object> {
   idToParams: IdToParams<P>;
+  paramsToId: ParamsToId<P>;
 }
 
 export type PostsListFilter = ResourceListFilter;
@@ -17,6 +19,7 @@ export type PostsIds = Identifiable<string>[];
 
 export class Blog<P extends object> {
   public idToParams!: IdToParams<P>;
+  public paramsToId!: ParamsToId<P>;
 
   constructor(public sources: SourcesSequence<string, string>, options: BlogOptions<P>) {
     this.idToParams = options.idToParams;

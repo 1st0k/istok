@@ -1,6 +1,6 @@
 import { createMemorySource, createSourcesSequence } from '@istok/core';
 import { Blog, IdToParams } from './index';
-import { idToPathParams, LocalizedBlogParams } from './LocalizedBlog';
+import { idToPathParams, LocalizedBlogParams, paramsToId } from './LocalizedBlog';
 
 const posts = {
   'hello/ru': 'привет',
@@ -18,6 +18,7 @@ function setupBaseBlog(posts: Record<string, string>, idToParams: IdToParams<Loc
     ]),
     {
       idToParams,
+      paramsToId: paramsToId(''),
     }
   );
 
