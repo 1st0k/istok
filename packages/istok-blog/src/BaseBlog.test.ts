@@ -1,6 +1,7 @@
 import { createMemorySource, createSourcesSequence } from '@istok/core';
 import { Blog, IdToParams } from './index';
 import { idToPathParams, LocalizedBlogParams, paramsToId } from './LocalizedBlog';
+import { getSlugMetadata } from './MetadataSlug';
 
 const posts = {
   'hello/ru': 'привет',
@@ -8,7 +9,7 @@ const posts = {
 };
 
 function setupBaseBlog(posts: Record<string, string>, idToParams: IdToParams<LocalizedBlogParams>) {
-  const blog = new Blog(
+  const blog = new Blog<LocalizedBlogParams, { slug: string }>(
     createSourcesSequence([
       {
         source: createMemorySource<string>({
@@ -17,6 +18,17 @@ function setupBaseBlog(posts: Record<string, string>, idToParams: IdToParams<Loc
       },
     ]),
     {
+      metadata: ({ blog }) => {
+        return {
+          getMetadata(post, { enhanceMetadata }) {
+            const enhancedMetadata = enhanceMetadata({
+              slug: getSlugMetadata(blog, post),
+            });
+
+            return enhancedMetadata;
+          },
+        };
+      },
       idToParams,
       paramsToId: paramsToId(''),
     }
@@ -93,6 +105,24 @@ describe(`BaseBlog`, () => {
           },
         },
       ]
+    `);
+
+    done();
+  });
+
+  it(`should get post metadata`, async done => {
+    const blog = setupBaseBlog(posts, idToPathParams);
+
+    const post = await blog.getPost('hello/ru');
+    const metadata = await blog.getPostMetadata(post);
+
+    expect(metadata).toMatchInlineSnapshot(`
+      Object {
+        "content": "привет",
+        "metadata": Object {
+          "slug": "hello",
+        },
+      }
     `);
 
     done();
