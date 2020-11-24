@@ -12,28 +12,32 @@ export type PostWithMetadata<E extends object = {}> = {
   metadata: MetadataBase<E>;
 };
 
-export type EnhanceMetadata<F extends object> = (fields: F) => PostWithMetadata<F>;
+export type EnhanceMetadata<InlineMetadata extends object, F extends object> = (
+  fields: F
+) => PostWithMetadata<InlineMetadata & F>;
 
-export type MetadataPluginContext<P extends BlogParams, F extends object> = {
-  blog: Blog<P, F>;
+export type MetadataPluginContext<P extends BlogParams, InlineMetadata extends object, F extends object> = {
+  blog: Blog<P, InlineMetadata, F>;
 };
 
-export type MetadataPluginResult<F extends object> = {
+export type MetadataPluginResult<InlineMetadata extends object, F extends object> = {
   getMetadata(
     post: Post,
-    { metadata }: { metadata: PostWithMetadata; enhanceMetadata: EnhanceMetadata<F> }
-  ): PostWithMetadata<F>;
+    { metadata }: { metadata: PostWithMetadata; enhanceMetadata: EnhanceMetadata<InlineMetadata, F> }
+  ): PostWithMetadata<InlineMetadata & F>;
 };
 
-export type MetadataPlugin<P extends BlogParams, F extends object> = (
-  ctx: MetadataPluginContext<P, F>
-) => MetadataPluginResult<F>;
+export type MetadataPlugin<P extends BlogParams, InlineMetadata extends object, F extends object> = (
+  ctx: MetadataPluginContext<P, InlineMetadata, F>
+) => MetadataPluginResult<InlineMetadata, F>;
 
-export async function getPostMetadata<E extends object = {}>(post: Post): Promise<PostWithMetadata<E>> {
+export async function getPostMetadata<InlineMetadata extends object>(
+  post: Post
+): Promise<PostWithMetadata<InlineMetadata>> {
   const { data: metadata, content } = matter(post.data);
 
   return {
-    metadata: metadata as MetadataBase<E>,
+    metadata: metadata as MetadataBase<InlineMetadata>,
     content,
   };
 }

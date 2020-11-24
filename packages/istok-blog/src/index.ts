@@ -6,11 +6,12 @@ import {
   Resource,
 } from '@istok/core';
 import { Identifiable } from '@istok/utils';
-import { getPostMetadata, MetadataPlugin, MetadataPluginResult, PostWithMetadata } from './metadata';
+import { MetadataBase, getPostMetadata, MetadataPlugin, MetadataPluginResult, PostWithMetadata } from './metadata';
 
 export { idToLocale, idToSlug, LocalizedBlogParams, idToPathParams, paramsToId } from './LocalizedBlog';
 
 export { getSlugMetadata } from './MetadataSlug';
+export { MetadataBase };
 
 export type BlogParamsField = {
   slug: string[];
@@ -30,19 +31,19 @@ export const allPostsFilter: PostsListFilter = () => true;
 export type Post = Resource<string>;
 export type PostsIds = Identifiable<string>[];
 
-export interface BlogOptions<P extends BlogParams, F extends object> {
+export interface BlogOptions<P extends BlogParams, InlineMetadata extends object, F extends object> {
   idToParams: IdToParams<P>;
   paramsToId: ParamsToId<P>;
-  metadata: MetadataPlugin<P, F>;
+  metadata: MetadataPlugin<P, InlineMetadata, F>;
 }
 
-export class Blog<P extends BlogParams, F extends object> {
+export class Blog<P extends BlogParams, InlineMetadata extends object, F extends object> {
   public idToParams!: IdToParams<P>;
   public paramsToId!: ParamsToId<P>;
 
-  private metadataPlugin!: MetadataPluginResult<F>;
+  private metadataPlugin!: MetadataPluginResult<InlineMetadata, F>;
 
-  constructor(public sources: SourcesSequence<string, string>, options: BlogOptions<P, F>) {
+  constructor(public sources: SourcesSequence<string, string>, options: BlogOptions<P, InlineMetadata, F>) {
     this.idToParams = options.idToParams;
 
     this.metadataPlugin = options.metadata({
@@ -51,11 +52,11 @@ export class Blog<P extends BlogParams, F extends object> {
   }
 
   private async fetchPostMetadata(post: Post) {
-    const metadata = await getPostMetadata<PostWithMetadata<F>>(post);
+    const metadata = await getPostMetadata<InlineMetadata>(post);
     return metadata;
   }
 
-  private enhanceMetadata(postWithMetadata: PostWithMetadata, fields: F) {
+  private enhanceMetadata(postWithMetadata: PostWithMetadata<InlineMetadata>, fields: F) {
     return {
       ...postWithMetadata,
       metadata: {
@@ -97,10 +98,10 @@ export class Blog<P extends BlogParams, F extends object> {
     return postsIds.map(p => p.id).map(this.idToParams);
   }
 
-  async getPostMetadata(post: Post): Promise<PostWithMetadata<F>> {
+  async getPostMetadata(post: Post): Promise<PostWithMetadata<InlineMetadata & F>> {
     const metadata = await this.fetchPostMetadata(post);
 
-    const enhanceMetadata = (fields: F): PostWithMetadata<F> => this.enhanceMetadata(metadata, fields);
+    const enhanceMetadata = (fields: F): PostWithMetadata<InlineMetadata & F> => this.enhanceMetadata(metadata, fields);
 
     return this.metadataPlugin.getMetadata(post, {
       metadata,

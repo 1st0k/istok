@@ -8,8 +8,11 @@ const posts = {
   'hello/en': 'hi',
 };
 
-function setupBaseBlog(posts: Record<string, string>, idToParams: IdToParams<LocalizedBlogParams>) {
-  const blog = new Blog<LocalizedBlogParams, { slug: string }>(
+function setupBaseBlog<T extends object = {}>(
+  posts: Record<string, string>,
+  idToParams: IdToParams<LocalizedBlogParams>
+) {
+  const blog = new Blog<LocalizedBlogParams, T, { slug: string }>(
     createSourcesSequence([
       {
         source: createMemorySource<string>({
