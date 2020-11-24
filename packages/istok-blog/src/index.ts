@@ -33,7 +33,7 @@ export interface BlogOptions<P extends BlogParams> {
   paramsToId: ParamsToId<P>;
 }
 
-export class Blog<P extends BlogParams> {
+export class Blog<P extends BlogParams, M extends object = {}> {
   public idToParams!: IdToParams<P>;
   public paramsToId!: ParamsToId<P>;
 
@@ -73,8 +73,8 @@ export class Blog<P extends BlogParams> {
     return postsIds.map(p => p.id).map(this.idToParams);
   }
 
-  async getPostMetadata(post: Post): Promise<PostWithMetadata & { slug: string }> {
-    const metadata = await getPostMetadata(post);
+  async getPostMetadata(post: Post): Promise<PostWithMetadata<M> & { slug: string }> {
+    const metadata = await getPostMetadata<M>(post);
 
     return {
       ...metadata,

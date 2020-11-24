@@ -2,21 +2,21 @@ import matter from 'gray-matter';
 
 import { Post } from './';
 
-export type MetadataBase = {
+export type MetadataBase<E extends object = {}> = E & {
   date: string;
   title: string;
 };
 
-export type PostWithMetadata<M extends MetadataBase = MetadataBase> = {
+export type PostWithMetadata<E extends object = {}> = {
   content: string;
-  metadata: M;
+  metadata: MetadataBase<E>;
 };
 
-export async function getPostMetadata<M extends MetadataBase = MetadataBase>(post: Post): Promise<PostWithMetadata<M>> {
+export async function getPostMetadata<E extends object = {}>(post: Post): Promise<PostWithMetadata<E>> {
   const { data: metadata, content } = matter(post.data);
 
   return {
-    metadata: metadata as M,
+    metadata: metadata as MetadataBase<E>,
     content,
   };
 }
