@@ -37,7 +37,7 @@ export type SourceBehaviour = {
 
 export type SourcesSequence<DataType, E> = Pick<Source<DataType, E>, 'get' | 'set' | 'clear'> & {
   sources: Source<DataType, E>[];
-  getList(filer?: ResourceListFilter, sourceIndex?: number): Promise<ResourceOpListResult<E>>;
+  getList(filter?: ResourceListFilter, sourceIndex?: number): Promise<ResourceOpListResult<E>>;
 };
 
 type SourceSequenceItem<DataType, E> = {
