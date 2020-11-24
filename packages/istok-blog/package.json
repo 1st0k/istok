@@ -41,6 +41,7 @@
   },
   "dependencies": {
     "@istok/core": "^0.5.5",
-    "@istok/utils": "^0.1.4"
+    "@istok/utils": "^0.1.4",
+    "gray-matter": "^4.0.2"
   }
 }

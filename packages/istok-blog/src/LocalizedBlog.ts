@@ -7,14 +7,14 @@
   2. slug is the all parts except the last one.
 */
 
-import { IdToParams } from './';
+import { BlogParams, IdToParams } from './';
 
-export type LocalizedBlogParams = {
-  params: {
-    slug: string[];
-  };
-  locale: string;
-};
+export type LocalizedBlogParams = BlogParams<
+  {},
+  {
+    locale: string;
+  }
+>;
 
 export function idToLocale(id: string) {
   const parts = id.split('/');
@@ -28,8 +28,7 @@ export function idToLocale(id: string) {
 }
 
 export function idToSlug(id: string) {
-  const allParts = id.split('/');
-  const slug = allParts.slice(0, allParts.length - 1);
+  const slug = id.split('/').slice(0, -1);
   if (slug.length === 0) {
     throw new Error(`Failed to determine slug of post "${id}".`);
   }
