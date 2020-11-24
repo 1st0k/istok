@@ -23,7 +23,7 @@ export type MetadataPluginContext<P extends BlogParams, InlineMetadata extends o
 export type MetadataPluginResult<InlineMetadata extends object, F extends object> = {
   getMetadata(
     post: Post,
-    { metadata }: { metadata: PostWithMetadata; enhanceMetadata: EnhanceMetadata<InlineMetadata, F> }
+    context: { metadata: PostWithMetadata<InlineMetadata>; enhanceMetadata: EnhanceMetadata<InlineMetadata, F> }
   ): PostWithMetadata<InlineMetadata & F>;
 };
 
