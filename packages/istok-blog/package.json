@@ -1,0 +1,46 @@
+{
+  "version": "0.1.0",
+  "name": "@istok/blog",
+  "author": "Alexander \"Snov\" Semenchenko",
+  "main": "dist/index.js",
+  "module": "dist/blog.esm.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/1st0k/istok.git",
+    "directory": "packages/istok-blog"
+  },
+  "engines": {
+    "node": ">=10"
+  },
+  "scripts": {
+    "start": "tsdx watch",
+    "build": "yarn cross-env NODE_ENV=production tsdx build",
+    "test": "tsdx test --passWithNoTests",
+    "lint": "tsdx lint",
+    "prepare": "yarn build"
+  },
+  "prettier": {
+    "printWidth": 120,
+    "tabWidth": 2,
+    "semi": true,
+    "singleQuote": true,
+    "trailingComma": "es5"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.2",
+    "tsdx": "^0.14.1"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "dependencies": {
+    "@istok/utils": "^0.1.4",
+    "@istok/core": "^0.5.4"
+  }
+}
