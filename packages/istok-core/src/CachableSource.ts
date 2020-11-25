@@ -84,8 +84,8 @@ export function createCachableSource<DataType>({
     async set(id, data) {
       return executeWhenReady(() => seq.set(id, data));
     },
-    async getList() {
-      return executeWhenReady(() => seq.getList());
+    async getList(filter) {
+      return executeWhenReady(() => seq.getList(filter));
     },
     async clear() {
       return executeWhenReady(() => seq.clear());
