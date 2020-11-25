@@ -8,7 +8,7 @@ import {
 import { Identifiable } from '@istok/utils';
 import { MetadataBase, getPostMetadata, MetadataPlugin, MetadataPluginResult, PostWithMetadata } from './metadata';
 
-export { idToLocale, idToSlug, LocalizedBlogParams, idToPathParams, paramsToId } from './LocalizedBlog';
+export { localeFilter, idToLocale, idToSlug, LocalizedBlogParams, idToPathParams, paramsToId } from './LocalizedBlog';
 
 export { getSlugMetadata } from './MetadataSlug';
 export { MetadataBase };

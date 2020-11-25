@@ -48,3 +48,14 @@ export const idToPathParams: IdToParams<LocalizedBlogParams> = id => {
     locale: idToLocale(id),
   };
 };
+
+export const localeFilter = (locale: string) => (id: string): boolean => {
+  const parts = id.split('/');
+  if (parts.length < 2) {
+    throw new Error(`Wrong post id format "${id}". Id must include slug and locale.`);
+  }
+
+  const postLocale = parts[parts.length - 1];
+
+  return postLocale.includes(locale);
+};
