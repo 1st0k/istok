@@ -6,7 +6,7 @@ import { Scope, HydrationContext } from './context';
 import { loadComponents } from './load-components';
 
 const makeElement = (body: string) => `React.createElement(${body})`;
-const makeExecutor = (body: string) => `return ${makeElement(body)};`;
+const makeReturn = (body: string) => `return ${makeElement(body)};`;
 
 type RenderOptions = {
   compiledSource: string;
@@ -28,11 +28,11 @@ export async function render(options: RenderOptions) {
   const keys = Object.keys(fullScope);
   const values = Object.values(fullScope);
 
-  const executor = wrapInProvider
-    ? makeExecutor(`MDXProvider, { components }, ${makeElement('MDXContent, {}')}`)
-    : makeExecutor(`MDXContent, {}`);
+  const functionReturn = wrapInProvider
+    ? makeReturn(`MDXProvider, { components }, ${makeElement('MDXContent, {}')}`)
+    : makeReturn(`MDXContent, {}`);
 
-  const renderMDX = new Function('React', ...keys, `${compiledSource}${executor}`);
+  const renderMDX = new Function('React', ...keys, `${compiledSource}${functionReturn}`);
 
   return renderMDX(React, ...values);
 }
