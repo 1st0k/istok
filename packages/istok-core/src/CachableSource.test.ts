@@ -51,4 +51,38 @@ describe('CachableSource', () => {
 
     done();
   });
+
+  it('should filter out resources', async done => {
+    const source = createCachableSource({
+      caches: [
+        {
+          source: createMemorySource(),
+        },
+      ],
+      source: createMemorySource({
+        initialResources: {
+          'ok-1': 'ok',
+          'ok-2': 'ok',
+          'filter-me-out': 'not ok',
+        },
+      }),
+    });
+
+    const result = await source.getList(id => id.includes('ok'));
+
+    expect(result).toMatchInlineSnapshot(`
+      Object {
+        "kind": "success",
+        "resources": Array [
+          Object {
+            "id": "ok-1",
+          },
+          Object {
+            "id": "ok-2",
+          },
+        ],
+      }
+    `);
+    done();
+  });
 });
