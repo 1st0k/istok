@@ -35,7 +35,7 @@ export function useHydrate<S extends Scope = {}>(
         {
           components: {
             ...(context.components ?? {}),
-            ...(await loadComponents(context.promisedComponents)),
+            ...(await loadComponents(context.asyncComponents)),
           },
         },
         rendered

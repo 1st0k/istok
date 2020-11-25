@@ -48,6 +48,7 @@
     "react-dom": "^17.0.1"
   },
   "dependencies": {
+    "@istok/lazy-load": "^0.1.0",
     "@istok/utils": "^0.1.4",
     "@mdx-js/react": "^1.6.21"
   }

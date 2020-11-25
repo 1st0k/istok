@@ -9,7 +9,7 @@ const mdx = `
 
 it('should transform code', async done => {
   const result = await render(mdx, {
-    promisedComponents: {
+    asyncComponents: {
       Async: () => Promise.resolve(({ children }: { children: ElementType }) => createElement('div', {}, children)),
     },
   });

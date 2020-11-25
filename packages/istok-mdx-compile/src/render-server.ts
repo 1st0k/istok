@@ -9,7 +9,7 @@ export interface RenderToStringOptions<S extends Scope> {
   components?: {
     [k: string]: ElementType;
   };
-  promisedComponents?: AsyncComponentsLoadConfig;
+  asyncComponents?: AsyncComponentsLoadConfig;
   scope?: S;
   compileOptions?: CompileOptions;
 }
@@ -19,7 +19,7 @@ export async function render<S extends Scope>(
   source: string,
   {
     components,
-    promisedComponents,
+    asyncComponents,
     compileOptions = DEFAULT_COMPILE_OPTIONS,
     scope = {} as S,
   }: RenderToStringOptions<S> = {
@@ -32,7 +32,7 @@ export async function render<S extends Scope>(
     scope,
     context: {
       components,
-      promisedComponents,
+      asyncComponents,
     },
     wrapInProvider: true,
   });

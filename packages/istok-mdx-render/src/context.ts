@@ -13,5 +13,5 @@ export interface HydrationData<S extends Scope> {
 
 export type HydrationContext = {
   components?: Record<string, ElementType>;
-  promisedComponents?: AsyncComponentsLoadConfig;
+  asyncComponents?: AsyncComponentsLoadConfig;
 };

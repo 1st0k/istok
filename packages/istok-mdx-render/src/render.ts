@@ -21,7 +21,7 @@ export async function render(options: RenderOptions) {
 
   const components = {
     ...(context.components ?? {}),
-    ...(await loadComponents(context.promisedComponents)),
+    ...(await loadComponents(context.asyncComponents)),
   };
 
   const fullScope = wrapInProvider ? { mdx, MDXProvider, components, ...scope } : { mdx, ...components, ...scope };
