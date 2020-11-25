@@ -1,10 +1,4 @@
-import {
-  SourcesSequence,
-  ResourceListFilter,
-  isGetListResultSuccess,
-  isGetSetResultSuccess,
-  Resource,
-} from '@istok/core';
+import { ResourceListFilter, isGetListResultSuccess, isGetSetResultSuccess, Resource, Source } from '@istok/core';
 import { Identifiable } from '@istok/utils';
 import { MetadataBase, getPostMetadata, MetadataPlugin, MetadataPluginResult, PostWithMetadata } from './metadata';
 
@@ -43,7 +37,7 @@ export class Blog<P extends BlogParams, InlineMetadata extends object, F extends
 
   private metadataPlugin!: MetadataPluginResult<InlineMetadata, F>;
 
-  constructor(public sources: SourcesSequence<string, string>, options: BlogOptions<P, InlineMetadata, F>) {
+  constructor(public source: Source<string, string>, options: BlogOptions<P, InlineMetadata, F>) {
     this.idToParams = options.idToParams;
 
     this.metadataPlugin = options.metadata({
@@ -67,7 +61,7 @@ export class Blog<P extends BlogParams, InlineMetadata extends object, F extends
   }
 
   async getPost(id: string) {
-    const post = await this.sources.get(id);
+    const post = await this.source.get(id);
 
     if (!isGetSetResultSuccess(post)) {
       throw new Error(`Failed to get post "${id}".`);
@@ -77,7 +71,7 @@ export class Blog<P extends BlogParams, InlineMetadata extends object, F extends
   }
 
   async getPostsList(filter: PostsListFilter = allPostsFilter): Promise<PostsIds> {
-    const list = await this.sources.getList(filter);
+    const list = await this.source.getList(filter);
 
     if (!isGetListResultSuccess(list)) {
       throw new Error('Failed to get list of posts.');
