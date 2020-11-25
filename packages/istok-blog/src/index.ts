@@ -98,7 +98,7 @@ export class Blog<P extends BlogParams, InlineMetadata extends object, F extends
     return postsIds.map(p => p.id).map(this.idToParams);
   }
 
-  async getPostMetadata(post: Post): Promise<PostWithMetadata<InlineMetadata & F>> {
+  getPostMetadata = async (post: Post): Promise<PostWithMetadata<InlineMetadata & F>> => {
     const metadata = await this.fetchPostMetadata(post);
 
     const enhanceMetadata = (fields: F): PostWithMetadata<InlineMetadata & F> => this.enhanceMetadata(metadata, fields);
@@ -107,5 +107,10 @@ export class Blog<P extends BlogParams, InlineMetadata extends object, F extends
       metadata,
       enhanceMetadata,
     });
-  }
+  };
+
+  getPostsMetadata = async (posts: Post[]) => {
+    const postsMetadataPromises = posts.map(post => this.getPostMetadata(post));
+    return Promise.all(postsMetadataPromises);
+  };
 }
