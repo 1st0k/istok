@@ -1,5 +1,5 @@
 {
-  "version": "0.2.6",
+  "version": "0.2.7",
   "name": "@istok/blog",
   "author": "Alexander \"Snov\" Semenchenko",
   "main": "dist/index.js",
@@ -40,7 +40,7 @@
     "registry": "https://registry.npmjs.org"
   },
   "dependencies": {
-    "@istok/core": "^0.5.6",
+    "@istok/core": "^0.5.7",
     "@istok/utils": "^0.1.4",
     "gray-matter": "^4.0.2"
   }

@@ -1,5 +1,5 @@
 {
-  "version": "0.1.0",
+  "version": "0.1.1",
   "name": "@istok/lazy-load",
   "author": "Alexander \"Snov\" Semenchenko",
   "main": "dist/index.js",
