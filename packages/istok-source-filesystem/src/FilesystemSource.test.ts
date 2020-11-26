@@ -96,6 +96,30 @@ describe('FilesystemSource should get list of resources', () => {
     done();
   });
 
+  it('with exclude files pattern', async done => {
+    const fs = createFilesystemSource({ root: MOCK_RESOURCES_ROOT, exclude: /res-1/ });
+
+    const list = await fs.getList();
+
+    expect(list).not.toMatchObject({
+      resources: expect.arrayContaining([
+        expect.objectContaining({
+          id: expect.stringMatching(/res-1/),
+        }),
+      ]),
+    });
+
+    expect(list).toMatchObject({
+      resources: expect.arrayContaining([
+        expect.objectContaining({
+          id: expect.stringMatching(/res-2/),
+        }),
+      ]),
+    });
+
+    done();
+  });
+
   it('with custom path to id tranform', async done => {
     const fs = createFilesystemSource({
       root: MOCK_RESOURCES_ROOT,
