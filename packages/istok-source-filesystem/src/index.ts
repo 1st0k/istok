@@ -20,6 +20,7 @@ export function meta() {
 
 interface FilesystemSourceOptions extends SourceOptions {
   exclude?: RegExp | string;
+  autoCreateRoot?: boolean;
 }
 
 export function createFilesystemSource<T>(opts: FilesystemSourceOptions): UniformFiniteSource<T, string> {
@@ -28,7 +29,11 @@ export function createFilesystemSource<T>(opts: FilesystemSourceOptions): Unifor
   const absoluteRootPath = path.resolve(root);
 
   if (!fs.existsSync(absoluteRootPath) || !fs.lstatSync(absoluteRootPath).isDirectory()) {
-    throw new Error(`Unable to initialize FilesystemSource: directory ${absoluteRootPath} is not exist.`);
+    if (opts.autoCreateRoot) {
+      fs.ensureDirSync(absoluteRootPath);
+    } else {
+      throw new Error(`Unable to initialize FilesystemSource: directory ${absoluteRootPath} is not exist.`);
+    }
   }
 
   const { pathToId, idToPath } = createIdPathAdapter({
@@ -56,17 +61,18 @@ export function createFilesystemSource<T>(opts: FilesystemSourceOptions): Unifor
   async function getList(filter: ResourceListFilter) {
     function getAllFilenames() {
       const files: string[] = [];
+      const exclude =
+        opts.exclude instanceof RegExp
+          ? opts.exclude
+          : typeof opts.exclude === 'string'
+          ? new RegExp(`${opts.exclude}`)
+          : null;
+
       return new Promise<string[]>((res, rej) => {
         walk(root)
           .on('data', d => {
             if (d.stats.isFile()) {
               const normalizedPath = normalizePath(d.path).replace(resourcePrefixRegExp, '');
-              const exclude =
-                opts.exclude instanceof RegExp
-                  ? opts.exclude
-                  : typeof opts.exclude === 'string'
-                  ? new RegExp(`${opts.exclude}`)
-                  : null;
 
               if (exclude && exclude.test(normalizedPath)) {
                 return;
