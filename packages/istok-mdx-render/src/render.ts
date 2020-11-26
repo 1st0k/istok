@@ -1,9 +1,8 @@
-import React from 'react';
+import React, { ElementType } from 'react';
 
 import { mdx, MDXProvider } from '@mdx-js/react';
 
-import { Scope, HydrationContext } from './context';
-import { loadComponents } from './load-components';
+import { Scope } from './context';
 
 const makeElement = (body: string) => `React.createElement(${body})`;
 const makeReturn = (body: string) => `return ${makeElement(body)};`;
@@ -11,18 +10,14 @@ const makeReturn = (body: string) => `return ${makeElement(body)};`;
 type RenderOptions = {
   compiledSource: string;
   scope: Scope;
-  context?: HydrationContext;
+  components?: Record<string, ElementType>;
   wrapInProvider?: boolean;
 };
 
 export async function render(options: RenderOptions) {
   const { compiledSource, scope, wrapInProvider } = options;
-  const { context = {} } = options;
 
-  const components = {
-    ...(context.components ?? {}),
-    ...(await loadComponents(context.asyncComponents)),
-  };
+  const components = options.components ?? {};
 
   const fullScope = wrapInProvider ? { mdx, MDXProvider, components, ...scope } : { mdx, ...components, ...scope };
   const keys = Object.keys(fullScope);

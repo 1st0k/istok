@@ -1,6 +1,6 @@
 import { ElementType } from 'react';
 import { renderToString as reactRenderToString } from 'react-dom/server';
-import { render as renderCore } from '@istok/mdx-render';
+import { render as renderCore, loadComponents } from '@istok/mdx-render';
 import { AsyncComponentsLoadConfig } from '@istok/mdx-render/dist/load-components';
 
 import { Scope, DEFAULT_COMPILE_OPTIONS, CompileOptions, compile } from './compile';
@@ -27,12 +27,13 @@ export async function render<S extends Scope>(
   }
 ) {
   const [compiledSource, laterCompiledSource] = await compile(source, compileOptions);
+  const loadedAsyncComponents = await loadComponents(asyncComponents);
   const rendered = await renderCore({
     compiledSource,
     scope,
-    context: {
-      components,
-      asyncComponents,
+    components: {
+      ...(components ?? {}),
+      ...loadedAsyncComponents,
     },
     wrapInProvider: true,
   });
