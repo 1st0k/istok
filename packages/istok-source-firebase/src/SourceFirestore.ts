@@ -7,12 +7,13 @@ import {
   UniformFiniteSource,
   createIdPathAdapter,
 } from '@istok/core';
+import { startService } from './service';
 import { FirebaseSourceOptons } from './SourceFirebase';
 
 export type FirestoreSourceOptions = FirebaseSourceOptons;
 
 export function createFirestoreSource<T>({
-  firebase,
+  firebase = startService(),
   options,
 }: FirestoreSourceOptions): UniformFiniteSource<T, string> {
   const root = options.root.endsWith('/') ? options.root : `${options.root}/`;

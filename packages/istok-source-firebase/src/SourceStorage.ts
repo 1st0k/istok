@@ -3,6 +3,7 @@ import { createIdPathAdapter, makeGetListResultSuccees, makeGetSetResultSuccess,
 import { makeResultError } from '@istok/utils';
 
 import { FirebaseSourceOptons } from './SourceFirebase';
+import { startService } from './service';
 
 export type FirebaseStorageSourceOptions = FirebaseSourceOptons<{
   bucket: string;
@@ -12,7 +13,7 @@ export type FirebaseStorageSourceOptions = FirebaseSourceOptons<{
 }>;
 
 export function createFirebaseStorageSource({
-  firebase,
+  firebase = startService(),
   options,
 }: FirebaseStorageSourceOptions): Source<string, string> {
   // root with trailing slash
