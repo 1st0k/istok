@@ -7,7 +7,7 @@
   2. slug is the all parts except the last one.
 */
 
-import { BlogParams, IdToParams } from './';
+import { Blog, BlogParams, IdToParams, PostsIds } from './';
 
 export type LocalizedBlogParams = BlogParams<
   {},
@@ -59,3 +59,20 @@ export const localeFilter = (locale: string) => (id: string): boolean => {
 
   return postLocale.includes(locale);
 };
+
+export function makeAllLocalesMetadataResolver(blog: Blog<LocalizedBlogParams, any, any, any>) {
+  return async function buildGlobalMetadata(postsIds: PostsIds) {
+    const meta: Record<string, { allLocales: string[] }> = {};
+    for (const { id } of postsIds) {
+      const { params, locale } = blog.idToParams(id);
+      const slug = params.slug.join('/');
+
+      if (!meta[slug]) {
+        meta[slug] = { allLocales: [] };
+      }
+      meta[slug].allLocales.push(locale);
+    }
+
+    return meta;
+  };
+}

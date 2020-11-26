@@ -1,6 +1,6 @@
 import matter from 'gray-matter';
 
-import { Post, Blog, BlogParams } from './';
+import { Post, Blog, BlogParams, PostsIds } from './';
 
 export type MetadataBase<E extends object = {}> = E & {
   date: string;
@@ -12,24 +12,38 @@ export type PostWithMetadata<E extends object = {}> = {
   metadata: MetadataBase<E>;
 };
 
-export type EnhanceMetadata<InlineMetadata extends object, F extends object> = (
+export type EnhanceMetadata<InlineMetadata extends object, F extends object, GlobalMeta extends object> = (
   fields: F
-) => PostWithMetadata<InlineMetadata & F>;
+) => PostWithMetadata<InlineMetadata & F & GlobalMeta>;
 
-export type MetadataPluginContext<P extends BlogParams, InlineMetadata extends object, F extends object> = {
-  blog: Blog<P, InlineMetadata, F>;
+export type MetadataPluginContext<
+  P extends BlogParams,
+  InlineMetadata extends object,
+  F extends object,
+  GlobalMeta extends object
+> = {
+  blog: Blog<P, InlineMetadata, F, GlobalMeta>;
 };
 
-export type MetadataPluginResult<InlineMetadata extends object, F extends object> = {
+export type MetadataPluginResult<InlineMetadata extends object, F extends object, GlobalMeta extends object> = {
   getMetadata(
     post: Post,
-    context: { metadata: PostWithMetadata<InlineMetadata>; enhanceMetadata: EnhanceMetadata<InlineMetadata, F> }
-  ): PostWithMetadata<InlineMetadata & F>;
+    context: {
+      metadata: PostWithMetadata<InlineMetadata & GlobalMeta>;
+      enhanceMetadata: EnhanceMetadata<InlineMetadata, F, GlobalMeta>;
+    }
+  ): PostWithMetadata<InlineMetadata & F & GlobalMeta>;
+  buildGlobalMetadata(postsIds: PostsIds): Promise<Record<string, GlobalMeta>>;
 };
 
-export type MetadataPlugin<P extends BlogParams, InlineMetadata extends object, F extends object> = (
-  ctx: MetadataPluginContext<P, InlineMetadata, F>
-) => MetadataPluginResult<InlineMetadata, F>;
+export type MetadataPlugin<
+  P extends BlogParams,
+  InlineMetadata extends object,
+  F extends object,
+  GlobalMeta extends object
+> = (
+  ctx: MetadataPluginContext<P, InlineMetadata, F, GlobalMeta>
+) => MetadataPluginResult<InlineMetadata, F, GlobalMeta>;
 
 export async function getPostMetadata<InlineMetadata extends object>(
   post: Post

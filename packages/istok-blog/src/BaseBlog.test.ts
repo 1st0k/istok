@@ -1,6 +1,6 @@
-import { createMemorySource, createSourcesSequence } from '@istok/core';
+import { createMemorySource } from '@istok/core';
 import { Blog, IdToParams } from './index';
-import { idToPathParams, LocalizedBlogParams, paramsToId } from './LocalizedBlog';
+import { idToPathParams, LocalizedBlogParams, makeAllLocalesMetadataResolver, paramsToId } from './LocalizedBlog';
 import { getSlugMetadata } from './MetadataSlug';
 
 const posts = {
@@ -12,17 +12,17 @@ function setupBaseBlog<T extends object = {}>(
   posts: Record<string, string>,
   idToParams: IdToParams<LocalizedBlogParams>
 ) {
-  const blog = new Blog<LocalizedBlogParams, T, { slug: string }>(
-    createSourcesSequence([
-      {
-        source: createMemorySource<string>({
-          initialResources: posts,
-        }),
-      },
-    ]),
+  const blog = new Blog<LocalizedBlogParams, T, { slug: string }, { allLocales: string[] }>(
+    {
+      posts: createMemorySource<string>({
+        initialResources: posts,
+      }),
+      internal: createMemorySource<string>(),
+    },
     {
       metadata: ({ blog }) => {
         return {
+          buildGlobalMetadata: makeAllLocalesMetadataResolver(blog),
           getMetadata(post, { enhanceMetadata }) {
             const enhancedMetadata = enhanceMetadata({
               slug: getSlugMetadata(blog, post),
@@ -123,6 +123,10 @@ describe(`BaseBlog`, () => {
       Object {
         "content": "привет",
         "metadata": Object {
+          "allLocales": Array [
+            "ru",
+            "en",
+          ],
           "slug": "hello",
         },
       }
