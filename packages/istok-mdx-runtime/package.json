@@ -1,5 +1,5 @@
 {
-  "version": "0.8.1",
+  "version": "0.8.2",
   "name": "@istok/mdx-runtime",
   "author": "Alexander \"Snov\" Semenchenko",
   "main": "dist/index.js",
@@ -49,7 +49,7 @@
   },
   "dependencies": {
     "@istok/lazy-load": "^0.1.1",
-    "@istok/mdx": "^0.1.0",
+    "@istok/mdx": "^0.1.1",
     "@istok/utils": "^0.1.4",
     "@mdx-js/react": "^1.6.21"
   }
