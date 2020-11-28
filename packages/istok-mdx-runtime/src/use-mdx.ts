@@ -1,18 +1,27 @@
-import { createElement, useState, useEffect } from 'react';
+import { createElement as createElementReact, useState, useEffect } from 'react';
 import { MDXProvider } from '@mdx-js/react';
 
-import { Scope, HydrationParams } from './context';
-import { render } from './render';
-import { loadComponents } from './load-components';
+import { createElement, ComponentsMap, MDXScope, AsyncComponentsLoadConfig, loadComponents } from '@istok/mdx';
 
 type HydrationOptions = {
   element?: 'div' | 'span';
 };
 
-export function useHydrate<S extends Scope = {}>(params: HydrationParams<S>, { element = 'div' }: HydrationOptions) {
-  const { compiledSource, contentHtml, scope = {} as S } = params;
+export interface HydrationParams<S extends MDXScope> {
+  contentHtml: string;
+  scope?: S;
+  asyncComponents?: AsyncComponentsLoadConfig;
+  components?: ComponentsMap;
+}
+
+export function useMdx<S extends MDXScope = {}>(
+  compiledSource: string,
+  params: HydrationParams<S>,
+  { element = 'div' }: HydrationOptions
+) {
+  const { contentHtml, scope = {} as S } = params;
   const [result, setResult] = useState<JSX.Element>(
-    createElement(element, {
+    createElementReact(element, {
       dangerouslySetInnerHTML: {
         __html: contentHtml,
       },
@@ -29,15 +38,15 @@ export function useHydrate<S extends Scope = {}>(params: HydrationParams<S>, { e
         ...(await loadComponents(params.asyncComponents)),
       };
 
-      const rendered = await render({ compiledSource, scope, components, wrapInProvider: false });
+      const element = await createElement(compiledSource, { scope, components, wrapInProvider: false });
       // wrapping the content with MDXProvider will allow us to customize the standard
       // markdown components (such as "h1" or "a") with the "components" object
-      const wrappedWithMdxProvider = createElement(
+      const wrappedWithMdxProvider = createElementReact(
         MDXProvider,
         {
           components,
         },
-        rendered
+        element
       );
 
       setResult(wrappedWithMdxProvider);

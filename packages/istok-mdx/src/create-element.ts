@@ -1,21 +1,20 @@
-import React, { ElementType } from 'react';
-
+import React from 'react';
 import { mdx, MDXProvider } from '@mdx-js/react';
 
-import { Scope } from './context';
+import { MDXScope } from './';
+import { ComponentsMap } from './components';
 
 const makeElement = (body: string) => `React.createElement(${body})`;
 const makeReturn = (body: string) => `return ${makeElement(body)};`;
 
-type RenderOptions = {
-  compiledSource: string;
-  scope: Scope;
-  components?: Record<string, ElementType>;
+export type CreateElementOptions = {
+  scope: MDXScope;
+  components?: ComponentsMap;
   wrapInProvider?: boolean;
 };
 
-export async function render(options: RenderOptions) {
-  const { compiledSource, scope, wrapInProvider } = options;
+export function createElement(compiledSource: string, options: CreateElementOptions) {
+  const { scope, wrapInProvider } = options;
 
   const components = options.components ?? {};
 
@@ -27,7 +26,7 @@ export async function render(options: RenderOptions) {
     ? makeReturn(`MDXProvider, { components }, ${makeElement('MDXContent, {}')}`)
     : makeReturn(`MDXContent, {}`);
 
-  const renderMDX = new Function('React', ...keys, `${compiledSource}${functionReturn}`);
+  const createMdxElement = new Function('React', ...keys, `${compiledSource}${functionReturn}`);
 
-  return renderMDX(React, ...values);
+  return createMdxElement(React, ...values);
 }

@@ -1,14 +1,14 @@
 import { createElement, ElementType } from 'react';
-import { render } from './render-server';
+import { render } from './render';
 
-const mdx = `
+const mdxSource = `
 # hey yo
 
 <Async>LOL</Async>
 `;
 
 it('should transform code', async done => {
-  const result = await render(mdx, {
+  const result = await render(mdxSource, {
     asyncComponents: {
       Async: () => Promise.resolve(({ children }: { children: ElementType }) => createElement('div', {}, children)),
     },
