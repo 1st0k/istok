@@ -1390,15 +1390,6 @@
   resolved "https://registry.yarnpkg.com/@istanbuljs/schema/-/schema-0.1.2.tgz#26520bf09abe4a5644cd5414e37125a8954241dd"
   integrity sha512-tsAQNx32a8CoFhjhijUIhI4kccIAgmGhy8LZMZgGfmXcpMbPRUqn5LWmgRttILi6yeGmBJd2xsPkFMs0PzgPCw==
 
-"@istok/mdx-render@^0.7.2":
-  version "0.7.2"
-  resolved "https://registry.yarnpkg.com/@istok/mdx-render/-/mdx-render-0.7.2.tgz#7b2137cefa7bb78541960206e24fd319304692f6"
-  integrity sha512-k1mT0aCH5+wca5jJOzcV3KaGI9SykGJAGEzoOtjLpPJo5rHLVqbSYmfG5EFDqjlmFsvlEhgWmcapmqwMdxupTg==
-  dependencies:
-    "@istok/lazy-load" "^0.1.1"
-    "@istok/utils" "^0.1.4"
-    "@mdx-js/react" "^1.6.21"
-
 "@jest/console@^25.5.0":
   version "25.5.0"
   resolved "https://registry.yarnpkg.com/@jest/console/-/console-25.5.0.tgz#770800799d510f37329c508a9edd0b7b447d9abb"
