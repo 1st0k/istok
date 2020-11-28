@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactElement } from 'react';
 import { mdx, MDXProvider } from '@mdx-js/react';
 
 import { MDXScope } from './';
@@ -13,7 +13,7 @@ export type CreateElementOptions = {
   wrapInProvider?: boolean;
 };
 
-export function createElement(compiledSource: string, options: CreateElementOptions) {
+export function createElement(compiledSource: string, options: CreateElementOptions): ReactElement {
   const { scope, wrapInProvider } = options;
 
   const components = options.components ?? {};

@@ -26,15 +26,15 @@ export async function render<S extends MDXScope>(
     ...loadedAsyncComponents,
   };
 
-  const element = createElement(serverCode, {
-    scope,
-    components,
-    wrapInProvider: true,
-  });
-
   return {
     compiledSource: browserCode,
-    contentHtml: reactRenderToString(element),
+    contentHtml: reactRenderToString(
+      createElement(serverCode, {
+        scope,
+        components,
+        wrapInProvider: true,
+      })
+    ),
     scope,
   };
 }

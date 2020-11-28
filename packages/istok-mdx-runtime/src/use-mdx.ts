@@ -38,7 +38,6 @@ export function useMdx<S extends MDXScope = {}>(
         ...(await loadComponents(params.asyncComponents)),
       };
 
-      const element = await createElement(compiledSource, { scope, components, wrapInProvider: false });
       // wrapping the content with MDXProvider will allow us to customize the standard
       // markdown components (such as "h1" or "a") with the "components" object
       const wrappedWithMdxProvider = createElementReact(
@@ -46,7 +45,7 @@ export function useMdx<S extends MDXScope = {}>(
         {
           components,
         },
-        element
+        createElement(compiledSource, { scope, components, wrapInProvider: false })
       );
 
       setResult(wrappedWithMdxProvider);
