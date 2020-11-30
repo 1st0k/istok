@@ -134,28 +134,22 @@ export class Blog<P extends BlogParams, InlineMetadata extends object, F extends
     const getListResult = await this.sources.internal.get('list');
     const currentPostSlug = this.idToParams(currentPostId).params.slug.join('/');
 
-    let needRebuildMeta = false;
-
-    if (!isGetSetResultSuccess(getListResult)) {
-      needRebuildMeta = true;
-    } else {
-      const data = JSON.parse(getListResult.resource.data as string);
-      if (data.invalidated) {
-        needRebuildMeta = true;
-      } else {
-        return data.posts[currentPostSlug];
-      }
+    if (isGetSetResultSuccess(getListResult)) {
+      try {
+        const data = JSON.parse(getListResult.resource.data as string);
+        if (data.invalidated === false) {
+          return data.posts[currentPostSlug];
+        }
+      } catch (e) {}
     }
 
-    if (needRebuildMeta) {
-      const postsList = await this.getPostsList();
+    const postsList = await this.getPostsList();
 
-      const meta = await this.metadataPlugin.buildGlobalMetadata(postsList);
+    const meta = await this.metadataPlugin.buildGlobalMetadata(postsList);
 
-      await this.sources.internal.set('list', JSON.stringify({ invalidated: false, posts: meta }));
+    await this.sources.internal.set('list', JSON.stringify({ invalidated: false, posts: meta }));
 
-      return meta[currentPostSlug];
-    }
+    return meta[currentPostSlug];
   }
 
   getPostsMetadata = async (posts: Post[]) => {
