@@ -1,23 +1,33 @@
 import { v4 } from 'uuid';
-import { createIdPathAdapter, makeGetListResultSuccees, makeGetSetResultSuccess, Source } from '@istok/core';
+import {
+  createIdPathAdapter,
+  identityTransforms,
+  makeGetListResultSuccees,
+  makeGetSetResultSuccess,
+  Source,
+} from '@istok/core';
 import { makeResultError } from '@istok/utils';
 
 import { FirebaseSourceOptons } from './SourceFirebase';
 import { startService } from './service';
 
-export type FirebaseStorageSourceOptions = FirebaseSourceOptons<{
-  bucket: string;
-  isPublic?: boolean;
-  debug?: boolean;
-  filter?: RegExp | string;
-}>;
+export type FirebaseStorageSourceOptions<T> = FirebaseSourceOptons<
+  T,
+  {
+    bucket: string;
+    isPublic?: boolean;
+    debug?: boolean;
+    filter?: RegExp | string;
+  }
+>;
 
-export function createFirebaseStorageSource({
+export function createFirebaseStorageSource<T = unknown>({
   firebase = startService(),
   options,
-}: FirebaseStorageSourceOptions): Source<string, string> {
+}: FirebaseStorageSourceOptions<T>): Source<T, string> {
   // root with trailing slash
   const rootNormalized = options.root.endsWith('/') ? options.root : options.root + '/';
+  const { readTransform = identityTransforms.read, writeTransform = identityTransforms.write } = options;
 
   const { pathToId, idToPath } = createIdPathAdapter({
     idDelimeter: '/',
@@ -52,7 +62,7 @@ export function createFirebaseStorageSource({
             })
             .on('end', () => {
               const result = Buffer.concat(data).toString();
-              resolve(makeGetSetResultSuccess(id, result));
+              resolve(makeGetSetResultSuccess(id, readTransform(result)));
             })
             .on('error', err => resolve(makeResultError(err.toString())));
         } catch (err) {
@@ -74,7 +84,7 @@ export function createFirebaseStorageSource({
         : {};
 
       return new Promise(resolve => {
-        bucket.file(resourcePath).save(data, setOptions, err => {
+        bucket.file(resourcePath).save(writeTransform(data), setOptions, err => {
           if (err) {
             return resolve(makeResultError(err.toString()));
           }

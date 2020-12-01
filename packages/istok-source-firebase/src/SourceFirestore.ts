@@ -6,17 +6,20 @@ import {
   makeResultError,
   UniformFiniteSource,
   createIdPathAdapter,
+  identityTransforms,
 } from '@istok/core';
 import { startService } from './service';
 import { FirebaseSourceOptons } from './SourceFirebase';
 
-export type FirestoreSourceOptions = FirebaseSourceOptons;
+export type FirestoreSourceOptions<T> = FirebaseSourceOptons<T>;
 
 export function createFirestoreSource<T>({
   firebase = startService(),
   options,
-}: FirestoreSourceOptions): UniformFiniteSource<T, string> {
+}: FirestoreSourceOptions<T>): UniformFiniteSource<T, string> {
   const root = options.root.endsWith('/') ? options.root : `${options.root}/`;
+
+  const { readTransform = identityTransforms.read, writeTransform = identityTransforms.write } = options;
 
   const { pathToId, idToPath } = createIdPathAdapter({
     idDelimeter: '/',
@@ -67,7 +70,7 @@ export function createFirestoreSource<T>({
           return makeResultError(`Resource "${id}" (path: "${resourcePath}") has no data.`);
         }
 
-        return makeGetSetResultSuccess(id, data);
+        return makeGetSetResultSuccess(id, readTransform(data));
       } catch (error) {
         return makeResultError(`Failed to get Resource with id "${id}", path: "${resourcePath}".`);
       }
@@ -78,10 +81,11 @@ export function createFirestoreSource<T>({
       try {
         const docRef = firebase.firestore().doc(resourcePath);
         const docData = await docRef.get();
+        const transformedData = writeTransform(data);
         if (docData.exists) {
-          await docRef.update(data as UpdateData);
+          await docRef.update(transformedData as UpdateData);
         } else {
-          await docRef.create(data as DocumentData);
+          await docRef.create(transformedData as DocumentData);
         }
         return makeGetSetResultSuccess(id, data);
       } catch (e) {

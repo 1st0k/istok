@@ -9,6 +9,7 @@ import {
   createIdPathAdapter,
   SourceOptions,
   ResourceListFilter,
+  identityTransforms,
 } from '@istok/core';
 
 export function meta() {
@@ -18,19 +19,15 @@ export function meta() {
   };
 }
 
-interface FilesystemSourceOptions<T> extends SourceOptions {
+interface FilesystemSourceOptions<T> extends SourceOptions<T> {
   exclude?: RegExp | string;
   autoCreateRoot?: boolean;
-  readTransform?(rawResource: unknown): T;
-  writeTransform?(data: T): unknown;
 }
-
-const identity = <T>(x: T) => x;
 
 export function createFilesystemSource<T>(opts: FilesystemSourceOptions<T>): UniformFiniteSource<T, string> {
   const root = opts.root;
 
-  const { readTransform = identity, writeTransform = identity } = opts;
+  const { readTransform = identityTransforms.read, writeTransform = identityTransforms.write } = opts;
 
   const absoluteRootPath = path.resolve(root);
 

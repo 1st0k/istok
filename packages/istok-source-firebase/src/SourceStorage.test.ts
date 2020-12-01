@@ -1,3 +1,5 @@
+import path from 'path';
+
 import { isGetSetResultSuccess } from '@istok/core';
 import { ERROR, SUCCESS } from '@istok/utils';
 
@@ -6,14 +8,14 @@ import { createFirebaseStorageSource } from './SourceStorage';
 
 function startFirebaseService() {
   return startService({
-    envFilePath: '.env',
+    envFilePath: path.resolve(process.cwd(), '../../.env'),
     debug: true,
   });
 }
 
 const bucket = process.env.FIREBASE_STORAGE_BUCKET || '';
 
-it.skip('should get a resource', async done => {
+it('should get a resource', async done => {
   const source = createFirebaseStorageSource({
     firebase: startFirebaseService(),
     options: {

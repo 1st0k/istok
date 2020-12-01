@@ -2,7 +2,7 @@ import { SourceOptions } from '@istok/core';
 
 import { Firebase } from './service';
 
-export type FirebaseSourceOptons<T = {}> = {
+export type FirebaseSourceOptons<T = unknown, O = {}> = {
   firebase?: Firebase;
-  options: T & SourceOptions;
+  options: O & SourceOptions<T>;
 };

@@ -1,3 +1,5 @@
+import path from 'path';
+
 import { isGetSetResultSuccess } from '@istok/core';
 import { ERROR, SUCCESS } from '@istok/utils';
 
@@ -6,7 +8,7 @@ import { createFirestoreSource } from './SourceFirestore';
 
 function startFirebaseService() {
   return startService({
-    envFilePath: '.env',
+    envFilePath: path.resolve(process.cwd(), '../../.env'),
     debug: true,
   });
 }
