@@ -18,13 +18,19 @@ export function meta() {
   };
 }
 
-interface FilesystemSourceOptions extends SourceOptions {
+interface FilesystemSourceOptions<T> extends SourceOptions {
   exclude?: RegExp | string;
   autoCreateRoot?: boolean;
+  readTransform?(rawResource: unknown): T;
+  writeTransform?(data: T): unknown;
 }
 
-export function createFilesystemSource<T>(opts: FilesystemSourceOptions): UniformFiniteSource<T, string> {
+const identity = <T>(x: T) => x;
+
+export function createFilesystemSource<T>(opts: FilesystemSourceOptions<T>): UniformFiniteSource<T, string> {
   const root = opts.root;
+
+  const { readTransform = identity, writeTransform = identity } = opts;
 
   const absoluteRootPath = path.resolve(root);
 
@@ -108,7 +114,7 @@ export function createFilesystemSource<T>(opts: FilesystemSourceOptions): Unifor
       try {
         const result = ((await fs.readFile(resourcePath)).toString() as unknown) as T;
 
-        return makeGetSetResultSuccess(id, result);
+        return makeGetSetResultSuccess(id, readTransform(result));
       } catch (error) {
         if (error.code === 'ENOENT') {
           return makeResultError(`Resource "${id}" (path: "${resourcePath}") is not exist.`);
@@ -121,7 +127,8 @@ export function createFilesystemSource<T>(opts: FilesystemSourceOptions): Unifor
 
       try {
         await fs.ensureDir(path.dirname(resourcePath));
-        await fs.writeFile(resourcePath, data);
+        const transformedData = writeTransform(data);
+        await fs.writeFile(resourcePath, transformedData);
 
         return makeGetSetResultSuccess(id, data);
       } catch (e) {

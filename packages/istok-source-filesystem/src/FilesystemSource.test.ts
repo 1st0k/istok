@@ -6,7 +6,7 @@ import { isGetListResultSuccess, isGetSetResultSuccess, ResourceOpResultError } 
 import { createFilesystemSource } from '.';
 import { SUCCESS } from '@istok/utils';
 
-const MOCK_RESOURCES_ROOT = path.resolve(__dirname, '../mocks/resources');
+import { MOCK_RESOURCES_ROOT, mockResourcesPath } from './testUtils';
 
 describe('FilesystemSource should be failed to initialize', () => {
   it('when root directory is not exist', () => {
@@ -168,9 +168,9 @@ it.skip('should set resource in existing directory', async done => {
   done();
 });
 
-it.skip('should create directory for a resource', async done => {
-  const fs = createFilesystemSource({ root: MOCK_RESOURCES_ROOT });
-  const result = await fs.set('new__resources__directory__resource-1', 'hello');
+it('should create directory for a resource', async done => {
+  const fs = createFilesystemSource({ root: mockResourcesPath('create-resources-folder'), autoCreateRoot: true });
+  const result = await fs.set('resource-1', 'hello');
   expect(result).toMatchObject(
     expect.objectContaining({
       kind: SUCCESS,
