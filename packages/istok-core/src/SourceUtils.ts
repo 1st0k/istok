@@ -5,11 +5,22 @@ export type IdPathAdapterOptions = {
   idToPath(id: string, pathDelimeter: string, idDelimeterRegExp: RegExp): string;
 };
 
-export interface SourceOptions {
+export interface SourceOptions<T> {
   root: string;
   pathToId?: IdPathAdapterOptions['pathToId'];
   idToPath?: IdPathAdapterOptions['idToPath'];
+  readTransform?(rawData: unknown): T;
+  writeTransform?(data: T): unknown;
 }
+
+export const identityTransforms = {
+  read<T>(rawResource: unknown) {
+    return rawResource as T;
+  },
+  write<T>(data: T) {
+    return data;
+  },
+};
 
 export function createIdPathAdapter({
   idDelimeter = '/',

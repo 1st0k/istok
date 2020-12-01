@@ -6,15 +6,18 @@ import {
   makeGetListResultSuccees,
   ERROR_RESOURCE_NOT_EXISTS,
 } from './Source';
+import { identityTransforms, SourceOptions } from './SourceUtils';
 
-export type MemorySourceOptions<T> = {
+export type MemorySourceOptions<T> = Pick<SourceOptions<T>, 'readTransform' | 'writeTransform'> & {
   initialResources?: Record<ResourceId, T>;
 };
 
-export function createMemorySource<T>({ initialResources = {} }: MemorySourceOptions<T> = {}): UniformFiniteSource<
-  T,
-  string
-> {
+export function createMemorySource<T>(options: MemorySourceOptions<T> = {}): UniformFiniteSource<T, string> {
+  const {
+    initialResources = {},
+    writeTransform = identityTransforms.write,
+    readTransform = identityTransforms.read,
+  } = options;
   const resources = new Map(Object.entries(initialResources));
 
   return {
@@ -23,10 +26,10 @@ export function createMemorySource<T>({ initialResources = {} }: MemorySourceOpt
         return makeResultError(ERROR_RESOURCE_NOT_EXISTS);
       }
 
-      return makeGetSetResultSuccess(id, resources.get(id)!);
+      return makeGetSetResultSuccess(id, readTransform(resources.get(id)!));
     },
     async set(id, data) {
-      resources.set(id, data);
+      resources.set(id, writeTransform(data) as T);
 
       return makeGetSetResultSuccess(id, data);
     },

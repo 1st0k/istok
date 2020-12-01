@@ -16,7 +16,7 @@ export {
   ResourceOpResultSuccess,
   ResourceListFilter,
 } from './Source';
-export { IdPathAdapterOptions, createIdPathAdapter, SourceOptions } from './SourceUtils';
+export { IdPathAdapterOptions, createIdPathAdapter, SourceOptions, identityTransforms } from './SourceUtils';
 export { MemorySourceOptions, createMemorySource } from './MemorySource';
 export { createSourcesSequence, SourcesSequence } from './SourcesSequence';
 export { CachableSource, CachableSourceOptions, CacheLevelOptions, createCachableSource } from './CachableSource';
