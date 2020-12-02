@@ -1,4 +1,5 @@
 import { createElement, ElementType } from 'react';
+
 import { render } from './render';
 
 const mdxSource = `
