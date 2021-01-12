@@ -1,19 +1,19 @@
-import path from 'path';
-
 import { isGetSetResultSuccess } from '@istok/core';
 import { ERROR, SUCCESS } from '@istok/utils';
 
 import { startService } from './service';
 import { createFirebaseStorageSource } from './SourceStorage';
 
+import { envFilePath } from './test-utils';
+
 function startFirebaseService() {
   return startService({
-    envFilePath: path.resolve(process.cwd(), '../../.env'),
+    envFilePath,
     debug: true,
   });
 }
 
-const bucket = process.env.FIREBASE_STORAGE_BUCKET || '';
+const bucket = process.env.FIREBASE_STORAGE_BUCKET || 'snov-e63cb.appspot.com';
 
 it('should get a resource', async done => {
   const source = createFirebaseStorageSource({

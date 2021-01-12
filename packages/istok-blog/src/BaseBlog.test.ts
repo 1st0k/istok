@@ -25,7 +25,7 @@ function setupBaseBlog<T extends object = {}>(
           buildGlobalMetadata: makeAllLocalesMetadataResolver(blog),
           getMetadata(post, { enhanceMetadata }) {
             const enhancedMetadata = enhanceMetadata({
-              slug: getSlugMetadata(blog, post),
+              slug: getSlugMetadata(blog, post.id),
             });
 
             return enhancedMetadata;

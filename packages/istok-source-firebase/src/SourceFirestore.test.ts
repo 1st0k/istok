@@ -1,14 +1,14 @@
-import path from 'path';
-
 import { isGetSetResultSuccess } from '@istok/core';
 import { ERROR, SUCCESS } from '@istok/utils';
 
 import { startService } from './service';
 import { createFirestoreSource } from './SourceFirestore';
 
+import { envFilePath } from './test-utils';
+
 function startFirebaseService() {
   return startService({
-    envFilePath: path.resolve(process.cwd(), '../../.env'),
+    envFilePath,
     debug: true,
   });
 }
