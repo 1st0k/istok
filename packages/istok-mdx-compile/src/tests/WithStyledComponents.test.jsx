@@ -4,8 +4,6 @@ const styled = require('styled-components').default;
 const { ServerStyleSheet } = require('styled-components');
 const { render } = require('../render');
 
-const rtlRender = require('@testing-library/react').render;
-
 require('jest-styled-components');
 
 it('should extract the CSS and render content HTML', async () => {
@@ -52,26 +50,4 @@ it('should extract the CSS and render content HTML', async () => {
     data-styled.g1[id=\\"sc-bdfBwQ\\"]{content:\\"hSHKCF,\\"}/*!sc*/
     </style>"
   `);
-});
-
-it('should accept custom renderer', async done => {
-  const mdxSourceStyled = `
-# hey yo
-`;
-
-  const result = await render(mdxSourceStyled, {
-    renderer(root) {
-      return rtlRender(root).container;
-    },
-  });
-
-  expect(result.contentHtml).toMatchInlineSnapshot(`
-    <div>
-      <h1>
-        hey yo
-      </h1>
-    </div>
-  `);
-
-  done();
 });
