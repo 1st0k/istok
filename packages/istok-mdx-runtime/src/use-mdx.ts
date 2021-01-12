@@ -1,4 +1,4 @@
-import { createElement as createElementReact, useState, useEffect } from 'react';
+import { createElement as createElementReact, useState, useEffect, ReactElement } from 'react';
 import { MDXProvider } from '@mdx-js/react';
 
 import { createElement, ComponentsMap, MDXScope, AsyncComponentsLoadConfig, loadComponents } from '@istok/mdx';
@@ -12,6 +12,7 @@ export interface HydrationParams<S extends MDXScope> {
   scope?: S;
   asyncComponents?: AsyncComponentsLoadConfig;
   components?: ComponentsMap;
+  wrap?(root: ReactElement): ReactElement;
 }
 
 export function useMdx<S extends MDXScope = {}>(
@@ -19,7 +20,7 @@ export function useMdx<S extends MDXScope = {}>(
   params: HydrationParams<S>,
   { element = 'div' }: HydrationOptions
 ) {
-  const { contentHtml, scope = {} as S } = params;
+  const { contentHtml, wrap = root => root, scope = {} as S } = params;
   const [result, setResult] = useState<JSX.Element>(
     createElementReact(element, {
       dangerouslySetInnerHTML: {
@@ -48,7 +49,7 @@ export function useMdx<S extends MDXScope = {}>(
         createElement(compiledSource, { scope, components, wrapInProvider: false })
       );
 
-      setResult(wrappedWithMdxProvider);
+      setResult(wrap(wrappedWithMdxProvider));
 
       window.cancelIdleCallback(handle);
     });
