@@ -1,4 +1,4 @@
-import { Blog, BlogParams, Post } from '.';
+import { Blog, BlogParams } from '.';
 
 export const getSlugMetadata = <
   P extends BlogParams,
@@ -7,7 +7,7 @@ export const getSlugMetadata = <
   GlobalMeta extends object
 >(
   blog: Blog<P, InlineMetadata, F, GlobalMeta>,
-  post: Post
-) => {
-  return blog.idToParams(post.id).params.slug.join('/');
+  postId: string
+): string => {
+  return blog.idToParams(postId).params.slug.join('/');
 };

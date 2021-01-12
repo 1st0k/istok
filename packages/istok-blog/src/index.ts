@@ -1,6 +1,7 @@
 import { ResourceListFilter, isGetListResultSuccess, isGetSetResultSuccess, Resource, Source } from '@istok/core';
 import { Identifiable } from '@istok/utils';
 import { MetadataBase, getPostMetadata, MetadataPlugin, MetadataPluginResult, PostWithMetadata } from './metadata';
+import { getSlugMetadata } from './MetadataSlug';
 
 export {
   makeAllLocalesMetadataResolver,
@@ -130,9 +131,9 @@ export class Blog<P extends BlogParams, InlineMetadata extends object, F extends
     });
   };
 
-  async getActualGlobalMeta(currentPostId: string) {
+  async getActualGlobalMeta(currentPostId: string): Promise<GlobalMeta> {
     const getListResult = await this.sources.internal.get('list');
-    const currentPostSlug = this.idToParams(currentPostId).params.slug.join('/');
+    const currentPostSlug = getSlugMetadata(this, currentPostId);
 
     if (isGetSetResultSuccess(getListResult)) {
       try {
