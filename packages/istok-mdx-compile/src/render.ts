@@ -14,12 +14,18 @@ export interface RenderOptions<S extends MDXScope> {
   postRender?(): void;
 }
 
+export type RenderResult<S extends MDXScope> = {
+  scope?: S;
+  compiledSource: string;
+  contentHtml: string;
+};
+
 export async function render<S extends MDXScope>(
   mdxPlainSource: string,
   options: RenderOptions<S> = {
     compileOptions: DEFAULT_COMPILE_OPTIONS,
   }
-) {
+): Promise<RenderResult<S>> {
   const { asyncComponents, compileOptions = DEFAULT_COMPILE_OPTIONS, scope = {} as S } = options;
   const { enhanceRoot = root => root, renderer = reactRenderToString } = options;
   const { postRender = () => void 0 } = options;
