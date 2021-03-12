@@ -1,5 +1,5 @@
-export type AsyncLoadMap<T, K extends string> = Record<K, () => Promise<T>>;
-export type ResolvedMap<T, K extends string> = Record<K, T>;
+export type AsyncLoadMap<T, K extends string = string> = Record<K, () => Promise<T>>;
+export type ResolvedMap<T, K extends string = string> = Record<K, T>;
 
 export async function loadMap<T, K extends string>(map: AsyncLoadMap<T, K> | undefined): Promise<ResolvedMap<T, K>> {
   if (!map) {
