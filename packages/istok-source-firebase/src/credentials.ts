@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/camelcase */
-
 /*
   List of variables names required to make credentials object 
 */
