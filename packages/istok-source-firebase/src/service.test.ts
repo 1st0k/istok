@@ -6,10 +6,7 @@ it.skip('should get credentials', async done => {
     debug: true,
   });
 
-  const result = await service
-    .firestore()
-    .doc('test/doc')
-    .get();
+  const result = await service.firestore().doc('test/doc').get();
 
   expect(result.data()).toBeTruthy();
 

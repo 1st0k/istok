@@ -50,7 +50,7 @@ export function createFilesystemSource<T>(opts: FilesystemSourceOptions<T>): Uni
 
     idToPath:
       opts.idToPath ??
-      function(id, pathDelimeter, idDelimeterRegExp) {
+      function (id, pathDelimeter, idDelimeterRegExp) {
         return path.resolve(root, id.replace(idDelimeterRegExp, pathDelimeter));
       },
   });

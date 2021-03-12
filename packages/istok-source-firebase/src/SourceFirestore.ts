@@ -32,7 +32,7 @@ export function createFirestoreSource<T>({
 
     idToPath:
       options.idToPath ??
-      function(id: string, pathDelimeter, idDelimeterRegExp) {
+      function (id: string, pathDelimeter, idDelimeterRegExp) {
         return root + id.replace(idDelimeterRegExp, pathDelimeter);
       },
   });
@@ -55,10 +55,7 @@ export function createFirestoreSource<T>({
     async get(id) {
       const resourcePath = idToPath(id);
       try {
-        const doc = await firebase
-          .firestore()
-          .doc(resourcePath)
-          .get();
+        const doc = await firebase.firestore().doc(resourcePath).get();
 
         if (!doc.exists) {
           return makeResultError(`Resource "${id}" (path: "${resourcePath}") is not exist.`);
@@ -106,10 +103,7 @@ export function createFirestoreSource<T>({
     async clear() {
       const listRoot = root.slice(0, -1);
       try {
-        const docs = await firebase
-          .firestore()
-          .collection(listRoot)
-          .listDocuments();
+        const docs = await firebase.firestore().collection(listRoot).listDocuments();
 
         await Promise.all(docs.map(doc => doc.delete()));
         return makeGetListResultSuccees([]);

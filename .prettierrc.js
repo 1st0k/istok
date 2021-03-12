@@ -1,4 +1,5 @@
 module.exports = {
+  parser: 'typescript',
   arrowParens: 'avoid',
   semi: true,
   trailingComma: 'es5',

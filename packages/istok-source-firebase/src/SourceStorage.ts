@@ -40,7 +40,7 @@ export function createFirebaseStorageSource<T = unknown>({
 
     idToPath:
       options.idToPath ??
-      function(id: string, pathDelimeter, idDelimeterRegExp) {
+      function (id: string, pathDelimeter, idDelimeterRegExp) {
         return rootNormalized + id.replace(idDelimeterRegExp, pathDelimeter);
       },
   });
