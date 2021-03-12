@@ -1,12 +1,12 @@
-export type AsyncLoadMap<T> = Record<string, () => Promise<T>>;
-export type ResolvedMap<T> = Record<string, T>;
+export type AsyncLoadMap<T, K extends string> = Record<K, () => Promise<T>>;
+export type ResolvedMap<T, K extends string> = Record<K, T>;
 
-export async function loadMap<T>(map: AsyncLoadMap<T> | undefined): Promise<ResolvedMap<T>> {
+export async function loadMap<T, K extends string>(map: AsyncLoadMap<T, K> | undefined): Promise<ResolvedMap<T, K>> {
   if (!map) {
-    return {};
+    return {} as any;
   }
 
-  const keys = Object.keys(map);
+  const keys = Object.keys(map) as K[];
 
   const promises: Array<Promise<T>> = keys.map(key => {
     return map[key]();
@@ -14,21 +14,21 @@ export async function loadMap<T>(map: AsyncLoadMap<T> | undefined): Promise<Reso
 
   const result = await Promise.all(promises);
 
-  return result.reduce<ResolvedMap<T>>((acc, curr, index) => {
+  return result.reduce<ResolvedMap<T, K>>((acc, curr, index) => {
     // indices of elements in result are the same as in original keys array
     // so we can get key corresponding to current element by index
     const key = keys[index];
     acc[key] = curr;
     return acc;
-  }, {});
+  }, {} as any);
 }
 
 export type LoadMapLoader<T> = (element: string) => Promise<T>;
 
-export function makeLoadMap<T>(elements: string[], loader: LoadMapLoader<T>) {
-  return elements.reduce<AsyncLoadMap<T>>((acc, curr) => {
+export function makeLoadMap<T, K extends string>(elements: K[], loader: LoadMapLoader<T>) {
+  return elements.reduce<AsyncLoadMap<T, K>>((acc, curr) => {
     acc[curr] = () => loader(curr);
 
     return acc;
-  }, {});
+  }, {} as any);
 }
