@@ -15,7 +15,7 @@ function startFirebaseService() {
 
 const bucket = process.env.FIREBASE_STORAGE_BUCKET || 'snov-e63cb.appspot.com';
 
-it('should get a resource', async done => {
+it.skip('should get a resource', async done => {
   const source = createFirebaseStorageSource({
     firebase: startFirebaseService(),
     options: {
