@@ -1,7 +1,7 @@
 import { loadMap, makeLoadMap } from './';
 
 describe('loadMap', () => {
-  it('should load async map', async done => {
+  it('should load async map', async () => {
     const map = {
       a: () => Promise.resolve('a is loaded'),
       b: () => Promise.resolve('b is loaded'),
@@ -15,8 +15,6 @@ describe('loadMap', () => {
             "b": "b is loaded",
           }
       `);
-
-    done();
   });
 
   it('should throw when atleast one of keys throws', async done => {
@@ -36,26 +34,20 @@ describe('loadMap', () => {
 
 describe('makeLoadMap', () => {
   it('should make load map', () => {
-    const map = makeLoadMap(['a', 'b'], element => Promise.resolve(`${element} is laoded`));
+    const map = makeLoadMap(['a', 'b'], element => Promise.resolve(`${element} is loaded`));
 
-    expect(map).toMatchInlineSnapshot(`
-      Object {
-        "a": [Function],
-        "b": [Function],
-      }
-    `);
+    expect(map).toMatchObject({
+      a: expect.any(Function),
+      b: expect.any(Function),
+    });
   });
 });
 
-it('should load map made with makeLoadMap', async done => {
-  const map = makeLoadMap(['a', 'b'], element => Promise.resolve(`${element} is laoded`));
+it('should load map made with makeLoadMap', async () => {
+  const map = makeLoadMap(['a', 'b'], element => Promise.resolve(`${element} is loaded`));
 
-  expect(await loadMap(map)).toMatchInlineSnapshot(`
-    Object {
-      "a": "a is laoded",
-      "b": "b is laoded",
-    }
-  `);
-
-  done();
+  expect(await loadMap(map)).toMatchObject({
+    a: expect.stringContaining('a is loaded'),
+    b: expect.stringContaining('b is loaded'),
+  });
 });
