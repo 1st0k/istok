@@ -32,9 +32,7 @@
     "trailingComma": "es5"
   },
   "devDependencies": {
-    "cross-env": "^7.0.2",
-    "react": "^17.0.1",
-    "tsdx": "^0.14.1"
+    "react": "^17.0.1"
   },
   "publishConfig": {
     "access": "public",
