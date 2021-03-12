@@ -1,5 +1,5 @@
 {
-  "version": "0.1.2",
+  "version": "0.1.3",
   "name": "@istok/mdx",
   "author": "Alexander \"Snov\" Semenchenko",
   "main": "dist/index.js",
@@ -29,7 +29,7 @@
     "registry": "https://registry.npmjs.org"
   },
   "dependencies": {
-    "@istok/lazy-load": "^0.1.2",
+    "@istok/lazy-load": "^0.1.3",
     "@mdx-js/react": "^1.6.21"
   },
   "peerDependencies": {

@@ -1,5 +1,5 @@
 {
-  "version": "0.6.2",
+  "version": "0.6.3",
   "name": "@istok/source-firebase",
   "author": "Alexander \"Snov\" Semenchenko",
   "main": "dist/index.js",
@@ -31,7 +31,7 @@
   "dependencies": {
     "@firebase/app-types": "^0.6.1",
     "@google-cloud/firestore": "^4.9.4",
-    "@istok/core": "^0.6.1",
+    "@istok/core": "^0.6.2",
     "@types/uuid": "^8.3.0",
     "dotenv": "^8.2.0",
     "firebase-admin": "^9.5.0",
