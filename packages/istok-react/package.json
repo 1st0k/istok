@@ -1,5 +1,5 @@
 {
-  "version": "0.1.1",
+  "version": "0.1.2",
   "name": "@istok/react",
   "author": "Alexander \"Snov\" Semenchenko",
   "main": "dist/index.js",

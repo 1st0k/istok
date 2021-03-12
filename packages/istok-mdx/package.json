@@ -1,5 +1,5 @@
 {
-  "version": "0.1.1",
+  "version": "0.1.2",
   "name": "@istok/mdx",
   "author": "Alexander \"Snov\" Semenchenko",
   "main": "dist/index.js",
@@ -31,13 +31,12 @@
     "singleQuote": true,
     "trailingComma": "es5"
   },
-  "devDependencies": {},
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org"
   },
   "dependencies": {
-    "@istok/lazy-load": "^0.1.1",
+    "@istok/lazy-load": "^0.1.2",
     "@mdx-js/react": "^1.6.21"
   },
   "peerDependencies": {
