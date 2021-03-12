@@ -27,13 +27,6 @@
     "lint": "tsdx lint",
     "prepare": "yarn build"
   },
-  "prettier": {
-    "printWidth": 120,
-    "tabWidth": 2,
-    "semi": true,
-    "singleQuote": true,
-    "trailingComma": "es5"
-  },
   "dependencies": {
     "@istok/core": "^0.6.1"
   },
