@@ -32,7 +32,7 @@ export async function render<S extends MDXScope>(
 
   const [serverCode, browserCode] = await compile(mdxPlainSource, compileOptions);
 
-  const loadedAsyncComponents = await loadComponents(asyncComponents);
+  const loadedAsyncComponents = asyncComponents ? await loadComponents(asyncComponents) : {};
   const components = {
     ...(options.components ?? {}),
     ...loadedAsyncComponents,

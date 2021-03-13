@@ -1,6 +1,10 @@
 import { loadMap, makeLoadMap } from './';
 
 describe('loadMap', () => {
+  it('should throw an error with undefined map', () => {
+    expect(loadMap(undefined as any)).rejects.toThrow();
+  });
+
   it('should load async map', async () => {
     const map = {
       a: () => Promise.resolve('a is loaded'),

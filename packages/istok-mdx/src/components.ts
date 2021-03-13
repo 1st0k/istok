@@ -6,7 +6,7 @@ export type ComponentsMap = Record<string, ElementType>;
 
 export type AsyncComponentsLoadConfig = AsyncLoadMap<ElementType>;
 
-export const loadComponents = (map: AsyncComponentsLoadConfig | undefined) => loadMap(map);
+export const loadComponents = (map: AsyncComponentsLoadConfig) => loadMap(map);
 
 export const makeComponentsLoader = (components: string[], loader: LoadMapLoader<ElementType>) =>
   makeLoadMap(components, loader);

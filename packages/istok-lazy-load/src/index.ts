@@ -1,11 +1,9 @@
 export type AsyncLoadMap<T, K extends string = string> = Record<K, () => Promise<T>>;
 export type ResolvedMap<T, K extends string = string> = Record<K, T>;
 
-export async function loadMap<T, K extends string = string>(
-  map: AsyncLoadMap<T, K> | undefined
-): Promise<ResolvedMap<T, K>> {
+export async function loadMap<T, K extends string = string>(map: AsyncLoadMap<T, K>): Promise<ResolvedMap<T, K>> {
   if (!map) {
-    return {} as any;
+    throw new Error(`Unable to load components: AsyncLoadMap is not defined`);
   }
 
   const keys = Object.keys(map) as K[];
