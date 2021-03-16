@@ -11,17 +11,34 @@ export interface ServiceParams {
   envFilePath?: string;
   credentialsFromEnvOptions?: GetCredentialsOptions;
   debug?: boolean;
+  passCredentialsToEmulator?: boolean;
 }
 
-export function startService({ envFilePath = '', debug = false, credentialsFromEnvOptions = {} }: ServiceParams = {}) {
+export function startService({
+  envFilePath = '',
+  debug = false,
+  passCredentialsToEmulator = false,
+  credentialsFromEnvOptions = {},
+}: ServiceParams = {}) {
   const isApp = admin.apps.length;
 
   if (isApp) {
     return admin.app();
   }
 
-  const credentialsFromEnvFile = envsFromFile(envFilePath).parsed || {};
-  const credentials = pickCredentialsObject(credentialsFromEnvFile) ?? getCredentialsFromEnv(credentialsFromEnvOptions);
+  const envFileRecord = envsFromFile(envFilePath).parsed || {};
+
+  const isUseEmulator = !!process.env.FIRESTORE_EMULATOR_HOST;
+  // Pass credentials to emulator only if corresponding flag is set
+  const shouldPassCredentials = !isUseEmulator || passCredentialsToEmulator;
+
+  if (isUseEmulator) {
+    console.log('Using Firestore emulator: ', process.env.FIRESTORE_EMULATOR_HOST);
+  }
+
+  const credentials = shouldPassCredentials
+    ? pickCredentialsObject(envFileRecord) ?? getCredentialsFromEnv(credentialsFromEnvOptions)
+    : null;
 
   if (debug) {
     console.log('firebase: envs is gathered from file or env variables');

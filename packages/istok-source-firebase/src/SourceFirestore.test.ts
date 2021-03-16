@@ -1,21 +1,35 @@
 import { isGetSetResultSuccess } from '@istok/core';
 import { ERROR, SUCCESS } from '@istok/utils';
 
-import { startService } from './service';
+import { startService, Firebase } from './service';
 import { createFirestoreSource } from './SourceFirestore';
 
 import { envFilePath } from './test-utils';
 
-function startFirebaseService() {
-  return startService({
+let firebase: Firebase | null = null;
+
+beforeAll(async () => {
+  jest.setTimeout(30000);
+
+  await startFirebaseService();
+});
+
+async function startFirebaseService() {
+  firebase = startService({
     envFilePath,
     debug: true,
   });
+
+  await firebase.firestore().doc('test/doc').set({ value: 'test doc' });
+  await firebase.firestore().doc('test/resource__with__multipart__id').set({ value: 'test doc' });
+  await firebase.firestore().doc('test-remove/doc').set({ value: 'test doc' });
+
+  return firebase;
 }
 
-it.skip('should get a resource', async done => {
+it.skip('should get a resource', async () => {
   const source = createFirestoreSource<{ data: any }>({
-    firebase: startFirebaseService(),
+    firebase: firebase!,
     options: {
       root: 'test',
     },
@@ -51,32 +65,30 @@ it.skip('should get a resource', async done => {
     error: expect.stringMatching(/is not exist/),
     kind: ERROR,
   });
-
-  done();
 });
 
-it.skip('should set a resource', async done => {
+it.skip('should set a resource', async () => {
   const source = createFirestoreSource<{ value: number }>({
-    firebase: startFirebaseService(),
+    firebase: firebase!,
     options: {
-      root: 'test',
+      root: 'test-add',
     },
   });
 
-  const result = await source.set('new__resource__1', { value: 420 });
+  const resourceId = 'new__resource__1';
+  const resourceData = { value: 420 };
 
-  expect(isGetSetResultSuccess(result)).toBe(true);
+  const setResult = await source.set(resourceId, resourceData);
+  const readResult = await source.get(resourceId);
 
-  if (isGetSetResultSuccess(result)) {
-    expect(result.resource.data.value).toEqual(expect.any(Number));
-  }
-
-  done();
+  expect(isGetSetResultSuccess(setResult)).toBe(true);
+  expect(isGetSetResultSuccess(readResult)).toBe(true);
+  expect((readResult as any).resource.data).toEqual(resourceData);
 });
 
-it.skip('should get list of resources', async done => {
+it.skip('should get list of resources', async () => {
   const source = createFirestoreSource({
-    firebase: startFirebaseService(),
+    firebase: firebase!,
     options: {
       root: 'test',
     },
@@ -91,13 +103,11 @@ it.skip('should get list of resources', async done => {
       }),
     ]),
   });
-
-  done();
 });
 
-it.skip('should clear list of resources', async done => {
+it.skip('should clear list of resources', async () => {
   const source = createFirestoreSource({
-    firebase: startFirebaseService(),
+    firebase: firebase!,
     options: {
       root: 'test-remove',
     },
@@ -109,6 +119,4 @@ it.skip('should clear list of resources', async done => {
   expect(result).toMatchObject({
     resources: expect.arrayContaining([]),
   });
-
-  done();
 });
