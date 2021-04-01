@@ -1,5 +1,5 @@
 {
-  "version": "0.4.0",
+  "version": "0.5.0",
   "name": "@istok/cli",
   "author": "Alexander \"Snov\" Semenchenko",
   "main": "dist/index.js",
@@ -28,7 +28,7 @@
     "prepare": "yarn build"
   },
   "dependencies": {
-    "@istok/core": "^0.7.0"
+    "@istok/core": "^0.8.0"
   },
   "publishConfig": {
     "access": "public",
