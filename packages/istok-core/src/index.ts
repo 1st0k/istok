@@ -7,6 +7,7 @@ export {
   makeGetListResultSuccees,
   makeGetSetResultSuccess,
   makeResultError,
+  makeOpResultSuccess,
   Source,
   UniformFiniteSource,
   ResourceOpResultError,
@@ -15,6 +16,10 @@ export {
   ResourceOpResult,
   ResourceOpResultSuccess,
   ResourceListFilter,
+  OpResult,
+  OpResultSuccess,
+  ERROR_RESOURCE_NOT_EXISTS,
+  ErrorResourceNotExists,
 } from './Source';
 export { IdPathAdapterOptions, createIdPathAdapter, SourceOptions, identityTransforms } from './SourceUtils';
 export { MemorySourceOptions, createMemorySource } from './MemorySource';

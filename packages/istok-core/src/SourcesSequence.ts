@@ -20,6 +20,7 @@ import { ResourceId } from './Resource';
 import {
   isGetSetResultSuccess,
   makeResultError,
+  OpResult,
   ResourceListFilter,
   ResourceOpListResult,
   ResourceOpResult,
@@ -35,7 +36,7 @@ export type SourceBehaviour = {
 }; 
 */
 
-export type SourcesSequence<DataType, E> = Pick<Source<DataType, E>, 'get' | 'set' | 'clear'> & {
+export type SourcesSequence<DataType, E> = Pick<Source<DataType, E>, 'get' | 'set' | 'clear' | 'remove'> & {
   sources: Source<DataType, E>[];
   getList(filter?: ResourceListFilter, sourceIndex?: number): Promise<ResourceOpListResult<E>>;
 };
@@ -100,6 +101,15 @@ export function createSourcesSequence<DataType>(
         throw new Error(`Incorrect sourceIndex "${sourceIndex}", expected value from 0 to ${finalSourceIndex}`);
       }
       return sources[sourceIndex].getList(filter);
+    },
+    async remove(id) {
+      const futureResults: Promise<OpResult<string>>[] = [];
+      for (const source of sources) {
+        futureResults.push(source.remove(id));
+      }
+      const results = await Promise.all(futureResults);
+      // return result of operation on final source
+      return results[results.length - 1];
     },
     async clear() {
       const futureResults: Promise<ResourceOpListResult<string>>[] = [];

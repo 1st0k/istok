@@ -5,6 +5,7 @@ import {
   UniformFiniteSource,
   makeGetListResultSuccees,
   ERROR_RESOURCE_NOT_EXISTS,
+  makeOpResultSuccess,
 } from './Source';
 import { identityTransforms, SourceOptions } from './SourceUtils';
 
@@ -43,6 +44,12 @@ export function createMemorySource<T>(options: MemorySourceOptions<T> = {}): Uni
       }
 
       return makeGetListResultSuccees(list);
+    },
+    async remove(id) {
+      if (resources.delete(id)) {
+        return makeOpResultSuccess();
+      }
+      return makeResultError(`Failed to remove resource with id "${id}".`);
     },
     async clear() {
       resources.clear();

@@ -25,8 +25,10 @@ export type ResourceOpResultError<E> = ResultError<E>;
 export type ResourceOpResult<D, E> = ResourceOpResultSuccess<D> | ResourceOpResultError<E>;
 
 export type ResourceOpListResultSuccess = ResultSuccess<{ resources: Identifiable<ResourceId>[] }>;
-
 export type ResourceOpListResult<E> = ResourceOpListResultSuccess | ResourceOpResultError<E>;
+
+export type OpResultSuccess = ResultSuccess<void>;
+export type OpResult<E> = OpResultSuccess | ResultError<E>;
 
 export const ERROR_RESOURCE_NOT_EXISTS = 'RESOURCE_NOT_EXISTS' as const;
 export type ErrorResourceNotExists = typeof ERROR_RESOURCE_NOT_EXISTS;
@@ -36,6 +38,7 @@ export type ResourceListFilter = (id: ResourceId) => boolean;
 export interface UniformFiniteSource<DataType, E> {
   get(resourceId: ResourceId): Promise<ResourceOpResult<DataType, E>>;
   set(resourceId: ResourceId, data: DataType): Promise<ResourceOpResult<DataType, E>>;
+  remove(resourceId: ResourceId): Promise<OpResult<E>>;
 
   getList(filter?: ResourceListFilter): Promise<ResourceOpListResult<E>>;
   clear(): Promise<ResourceOpListResult<E>>;
@@ -45,6 +48,10 @@ export type Source<DataType, E> = UniformFiniteSource<DataType, E>;
 
 export function makeResultError<E>(error: E): ResourceOpResultError<E> {
   return makeResultErrorUtils(error);
+}
+
+export function makeOpResultSuccess(): OpResultSuccess {
+  return makeResultSuccess(undefined);
 }
 
 export function makeGetSetResultSuccess<T>(id: ResourceId, data: T): ResourceOpResultSuccess<T> {
