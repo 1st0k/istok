@@ -10,6 +10,7 @@ import {
   SourceOptions,
   ResourceListFilter,
   identityTransforms,
+  makeOpResultSuccess,
 } from '@istok/core';
 
 export function meta() {
@@ -133,6 +134,15 @@ export function createFilesystemSource<T>(opts: FilesystemSourceOptions<T>): Uni
       }
     },
     getList,
+    async remove(id) {
+      const resourcePath = idToPath(id);
+      try {
+        await fs.remove(resourcePath);
+        return makeOpResultSuccess();
+      } catch (e) {
+        return makeResultError(`Unable to remove Resource "${id}" (path: ${resourcePath}): ${e.toString()}`);
+      }
+    },
     async clear() {
       try {
         // remove the directory with all content

@@ -4,7 +4,7 @@ import fs from 'fs-extra';
 import { isGetListResultSuccess, isGetSetResultSuccess, ResourceOpResultError } from '@istok/core';
 
 import { createFilesystemSource } from '.';
-import { SUCCESS } from '@istok/utils';
+import { ERROR, SUCCESS } from '@istok/utils';
 
 import { MOCK_RESOURCES_ROOT, mockResourcesPath } from './testUtils';
 
@@ -166,6 +166,24 @@ it.skip('should set resource in existing directory', async done => {
     })
   );
   done();
+});
+
+it.skip('should remove a resource', async () => {
+  const fs = createFilesystemSource({ root: MOCK_RESOURCES_ROOT });
+  await fs.set('res-1__new__1', 'hello');
+  const result = await fs.remove('res-1__new__1');
+  expect(result).toMatchInlineSnapshot(`
+    Object {
+      "kind": "success",
+    }
+  `);
+
+  expect(await fs.get('res-1__new__1')).toMatchObject(
+    expect.objectContaining({
+      kind: ERROR,
+      error: expect.stringContaining('not exist'),
+    })
+  );
 });
 
 it('should create directory for a resource', async done => {
