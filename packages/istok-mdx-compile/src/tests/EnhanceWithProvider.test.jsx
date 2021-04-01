@@ -1,3 +1,7 @@
+/**
+ * @jest-environment jsdom
+ */
+
 const { createContext, createElement } = require('react');
 
 const { render } = require('../render');

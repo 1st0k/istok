@@ -1,3 +1,7 @@
+/**
+ * @jest-environment jsdom
+ */
+
 const { createElement } = require('react');
 
 const styled = require('styled-components').default;

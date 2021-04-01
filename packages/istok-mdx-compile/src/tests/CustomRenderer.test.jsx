@@ -1,3 +1,7 @@
+/**
+ * @jest-environment jsdom
+ */
+
 const rtlRender = require('@testing-library/react').render;
 
 const { render } = require('../render');
