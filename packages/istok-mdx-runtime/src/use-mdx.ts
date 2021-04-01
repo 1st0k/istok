@@ -33,6 +33,10 @@ export function useMdx<S extends MDXScope = {}>(
   // if (typeof window === 'undefined') return result;
 
   useEffect(() => {
+    if (!compiledSource) {
+      return;
+    }
+
     const handle = window.requestIdleCallback(async () => {
       const components = {
         ...(params.components ?? {}),
