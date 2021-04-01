@@ -17,6 +17,9 @@ export const errorSource: UniformFiniteSource<string, string> = {
   async clear() {
     return makeResultError(`${INTENDED_ERROR} "clear"`);
   },
+  async remove(id) {
+    return makeResultError(`${INTENDED_ERROR} "remove" resource ${id}`);
+  },
 };
 
 export const successSource: UniformFiniteSource<string, IntendedError | string> = createMemorySource({

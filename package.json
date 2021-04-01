@@ -38,8 +38,8 @@
     "**/@typescript-eslint/parser": "^4.17.0"
   },
   "lint-staged": {
-    "**/*.{ts,tsx}": [
-      "prettier --write 'src/**/*' 'test/**/*' 'README.md'",
+    "*.@(ts|tsx|js|jsx)": [
+      "prettier --write",
       "tsdx lint"
     ]
   },
