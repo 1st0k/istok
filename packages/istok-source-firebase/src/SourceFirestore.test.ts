@@ -86,6 +86,29 @@ it.skip('should set a resource', async () => {
   expect((readResult as any).resource.data).toEqual(resourceData);
 });
 
+it.skip('should remove a resource', async () => {
+  const source = createFirestoreSource<{ value: number }>({
+    firebase: firebase!,
+    options: {
+      root: 'test-add',
+    },
+  });
+
+  const resourceId = 'new__resource__1';
+  const resourceData = { value: 420 };
+
+  await source.set(resourceId, resourceData);
+  await source.remove(resourceId);
+  const readResult = await source.get(resourceId);
+
+  expect(readResult).toMatchInlineSnapshot(`
+    Object {
+      "error": "Resource \\"new__resource__1\\" (path: \\"test-add/new__resource__1\\") is not exist.",
+      "kind": "error",
+    }
+  `);
+});
+
 it.skip('should get list of resources', async () => {
   const source = createFirestoreSource({
     firebase: firebase!,

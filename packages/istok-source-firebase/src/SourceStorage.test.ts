@@ -13,7 +13,7 @@ function startFirebaseService() {
   });
 }
 
-const bucket = process.env.FIREBASE_STORAGE_BUCKET || 'snov-e63cb.appspot.com';
+const bucket = process.env.FIREBASE_STORAGE_BUCKET as string;
 
 it.skip('should get a resource', async done => {
   const source = createFirebaseStorageSource({
@@ -70,6 +70,34 @@ it.skip('should set a resource', async done => {
   if (isGetSetResultSuccess(result)) {
     expect(result.resource.data).toEqual(expect.any(String));
   }
+
+  done();
+});
+
+it.skip('should remove a resource', async done => {
+  const source = createFirebaseStorageSource({
+    firebase: startFirebaseService(),
+    options: {
+      root: 'test',
+      bucket,
+    },
+  });
+
+  await source.set('new__resource__2', '420!');
+  const result = await source.remove('new__resource__2');
+
+  expect(result).toMatchInlineSnapshot(`
+    Object {
+      "kind": "success",
+    }
+  `);
+
+  expect(await source.get('new__resource__2')).toMatchInlineSnapshot(`
+    Object {
+      "error": "Error: No such object: snov-e63cb.appspot.com/test/new__resource__2",
+      "kind": "error",
+    }
+  `);
 
   done();
 });

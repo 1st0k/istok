@@ -7,6 +7,7 @@ import {
   UniformFiniteSource,
   createIdPathAdapter,
   identityTransforms,
+  makeOpResultSuccess,
 } from '@istok/core';
 import { startService } from './service';
 import { FirebaseSourceOptons } from './SourceFirebase';
@@ -98,6 +99,16 @@ export function createFirestoreSource<T>({
         return makeGetListResultSuccees(docs.map(({ id }) => ({ id: pathToId(id) })));
       } catch (e) {
         return makeResultError(`Failed to get list of resources: ${e.toString()}`);
+      }
+    },
+    async remove(id) {
+      const resourcePath = idToPath(id);
+      try {
+        const docRef = firebase.firestore().doc(resourcePath);
+        await docRef.delete();
+        return makeOpResultSuccess();
+      } catch (e) {
+        return makeResultError(`Failed to delete resource with id "${id}" by path "${resourcePath}": ${e.toString()}.`);
       }
     },
     async clear() {

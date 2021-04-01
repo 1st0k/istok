@@ -5,6 +5,7 @@ import {
   makeGetListResultSuccees,
   makeGetSetResultSuccess,
   Source,
+  makeOpResultSuccess,
 } from '@istok/core';
 import { makeResultError } from '@istok/utils';
 
@@ -121,6 +122,15 @@ export function createFirebaseStorageSource<T = unknown>({
         );
       } catch (e) {
         return makeResultError(`Failed to get list of resources: ${e.toString()}`);
+      }
+    },
+    async remove(id) {
+      const resourcePath = idToPath(id);
+      try {
+        bucket.file(resourcePath).delete();
+        return makeOpResultSuccess();
+      } catch (e) {
+        return makeResultError(`Failed to delete resource with id "${id}" by path "${resourcePath}": ${e.toString()}.`);
       }
     },
     async clear() {
