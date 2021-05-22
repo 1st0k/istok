@@ -1,5 +1,5 @@
 import mdx from '@mdx-js/mdx';
-import { remove } from 'unist-util-remove';
+import * as uur from 'unist-util-remove';
 import { Plugin, Pluggable, Compiler } from 'unified';
 
 import { transformAsync } from '@babel/core';
@@ -32,7 +32,7 @@ export const DEFAULT_COMPILE_OPTIONS: CompileOptions = {
   scope: {},
 };
 
-const removeImportsExportsPlugin: Plugin = () => tree => remove(tree, ['import', 'export']);
+const removeImportsExportsPlugin: Plugin = () => tree => uur.remove(tree, ['import', 'export']);
 
 export async function compile(
   mdxPlainSource: string,
