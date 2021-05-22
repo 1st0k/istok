@@ -42,6 +42,7 @@ export function MDXRenderer({ compiledSource, scope, components = {}, asyncCompo
       return () => window.cancelIdleCallback(handle);
     } else {
       prepareAllComponents();
+      return;
     }
   }, []);
 
