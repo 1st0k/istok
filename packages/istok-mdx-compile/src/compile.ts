@@ -46,7 +46,7 @@ export async function compile(
   const compiledES6CodeFromMdx = await mdx(mdxPlainSource, { ...mdxOptions, skipExport: true });
 
   const transformed = await transformAsync(compiledES6CodeFromMdx, {
-    presets: [presetReact, presetEnv],
+    presets: [[presetReact, { pragma: 'mdx' }], presetEnv],
     plugins: istokPlugins,
     configFile: false,
   });
