@@ -30,7 +30,7 @@ export async function render<S extends MDXScope>(
   const { enhanceRoot = root => root, renderer = reactRenderToString } = options;
   const { postRender = () => void 0 } = options;
 
-  const [serverCode, browserCode] = await compile(mdxPlainSource, compileOptions);
+  const { compiledSource } = await compile(mdxPlainSource, compileOptions);
 
   const loadedAsyncComponents = asyncComponents ? await loadComponents(asyncComponents) : {};
   const components = {
@@ -38,7 +38,7 @@ export async function render<S extends MDXScope>(
     ...loadedAsyncComponents,
   };
 
-  const element = createElement(serverCode, {
+  const element = createElement(compiledSource, {
     scope,
     components,
     wrapInProvider: true,
@@ -49,7 +49,7 @@ export async function render<S extends MDXScope>(
   postRender();
 
   return {
-    compiledSource: browserCode,
+    compiledSource,
     contentHtml,
     scope,
   };

@@ -1,57 +1,59 @@
 import mdx from '@mdx-js/mdx';
+import { remove } from 'unist-util-remove';
+import { Plugin, Pluggable, Compiler } from 'unified';
 
 import { transformAsync } from '@babel/core';
-
 import presetEnv from '@babel/preset-env';
 import presetReact from '@babel/preset-react';
+import { MDXScope, MDXSerialized } from '@istok/mdx';
 
-import BabelPluginMdxBrowser from './babel-plugin-mdx-browser';
 import createBabelPluginIstokResource from './babel-plugin-istok-resource';
 
 type ResourceToUrl = (source: string) => string;
 
-export type BaseCompileOptions = {
-  remarkPlugins: any[];
-  rehypePlugins: any[];
-  compilers: any[];
+export type CompileOptionsBase = {
+  remarkPlugins?: Pluggable[];
+  rehypePlugins?: Pluggable[];
+  hastPlugins?: Pluggable[];
+  compilers?: Compiler[];
 };
 
-export type CompileOptions = BaseCompileOptions & {
+export type CompileOptions = CompileOptionsBase & {
   resourceToURL: ResourceToUrl;
+  scope?: MDXScope;
 };
 
 export const DEFAULT_COMPILE_OPTIONS: CompileOptions = {
   resourceToURL: x => x,
   rehypePlugins: [],
   remarkPlugins: [],
+  hastPlugins: [],
   compilers: [],
+  scope: {},
 };
 
-export type CompilationResult = [string, string];
+const removeImportsExportsPlugin: Plugin = () => tree => remove(tree, ['import', 'export']);
 
-export async function compile(mdxPlainSource: string, options?: CompileOptions): Promise<CompilationResult> {
-  const { resourceToURL, ...restOptions } = options ?? DEFAULT_COMPILE_OPTIONS;
+export async function compile(
+  mdxPlainSource: string,
+  options: CompileOptions = DEFAULT_COMPILE_OPTIONS
+): Promise<MDXSerialized> {
+  const { resourceToURL, scope = {}, ...mdxOptions } = options;
+  options.remarkPlugins = [...(options.remarkPlugins || []), removeImportsExportsPlugin];
 
   const istokPlugins = [createBabelPluginIstokResource({ resourceToURL })];
 
-  const compiledES6CodeFromMdx = await mdx(mdxPlainSource, { ...restOptions, skipExport: true });
+  const compiledES6CodeFromMdx = await mdx(mdxPlainSource, { ...mdxOptions, skipExport: true });
 
-  const [serverCode, browserCode] = await Promise.all([
-    transformAsync(compiledES6CodeFromMdx, {
-      presets: [presetReact, presetEnv],
-      plugins: istokPlugins,
-      configFile: false,
-    }),
-    transformAsync(compiledES6CodeFromMdx, {
-      presets: [presetReact, presetEnv],
-      plugins: [BabelPluginMdxBrowser, ...istokPlugins],
-      configFile: false,
-    }),
-  ]);
+  const transformed = await transformAsync(compiledES6CodeFromMdx, {
+    presets: [presetReact, presetEnv],
+    plugins: istokPlugins,
+    configFile: false,
+  });
 
-  if (!serverCode || !serverCode.code || !browserCode || !browserCode.code) {
+  if (!transformed || !transformed.code) {
     throw new Error('No code was generated.');
   }
 
-  return [serverCode.code, browserCode.code];
+  return { compiledSource: transformed.code, scope };
 }
