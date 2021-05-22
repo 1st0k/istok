@@ -1,2 +1,2 @@
 export { render, RenderOptions } from './render';
-export { compile, CompilationResult, CompileOptions } from './compile';
+export { compile, CompileOptions } from './compile';

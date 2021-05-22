@@ -50,5 +50,6 @@
     "@babel/preset-react": "^7.12.5",
     "@istok/mdx": "^0.3.2",
     "@mdx-js/mdx": "^1.6.21"
-  }
+  },
+  "gitHead": "f1bf0e8a85299fc54abe8894bfc6673a31c46c0c"
 }

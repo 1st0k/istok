@@ -43,5 +43,6 @@
     "@istok/mdx": "^0.3.2",
     "@istok/utils": "^0.1.6",
     "@mdx-js/react": "^1.6.21"
-  }
+  },
+  "gitHead": "f1bf0e8a85299fc54abe8894bfc6673a31c46c0c"
 }
