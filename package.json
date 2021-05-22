@@ -14,7 +14,8 @@
     "lint": "lerna run lint",
     "test": "tsdx test --passWithNoTests",
     "prepublish": "lerna run prepublish",
-    "release": "yarn test && yarn lerna publish"
+    "release": "yarn test && yarn lerna publish",
+    "release:unsafe": "yarn lerna publish"
   },
   "dependencies": {
     "lerna": "^3.22.1"
