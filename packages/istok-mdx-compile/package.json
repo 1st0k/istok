@@ -1,5 +1,5 @@
 {
-  "version": "0.9.4",
+  "version": "0.9.5",
   "name": "@istok/mdx-compile",
   "author": "Alexander \"Snov\" Semenchenko",
   "main": "dist/index.js",
