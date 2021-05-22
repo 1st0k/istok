@@ -4,6 +4,7 @@
     "src"
   ],
   "compilerOptions": {
+    "jsx": "react",
     "downlevelIteration": true,
     "target": "es5",
     "module": "esnext",

@@ -1,0 +1,30 @@
+declare module '@mdx-js/react' {
+  const Mdx: any;
+  export const mdx: any;
+  export const MDXProvider: any;
+}
+
+declare interface Window {
+  requestIdleCallback(cb: Function): NodeJS.Timeout;
+  cancelIdleCallback(id: NodeJS.Timeout): void;
+}
+
+// // requestIdleCallback types found here: https://github.com/microsoft/TypeScript/issues/21309
+// type RequestIdleCallbackHandle = any;
+// type RequestIdleCallbackOptions = {
+//   timeout: number;
+// };
+// type RequestIdleCallbackDeadline = {
+//   readonly didTimeout: boolean;
+//   timeRemaining: () => number;
+// };
+
+// declare global {
+//   interface Window {
+//     requestIdleCallback: (
+//       callback: (deadline: RequestIdleCallbackDeadline) => void,
+//       opts?: RequestIdleCallbackOptions
+//     ) => RequestIdleCallbackHandle;
+//     cancelIdleCallback: (handle: RequestIdleCallbackHandle) => void;
+//   }
+// }
