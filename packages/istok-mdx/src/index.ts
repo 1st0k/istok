@@ -5,3 +5,8 @@ export { CreateElementOptions, createElement } from './create-element';
 export type MDXScope = {
   [k: string]: unknown;
 };
+
+export type MDXSerialized<TScope = MDXScope> = {
+  compiledSource: string;
+  scope?: TScope;
+};
