@@ -1,6 +1,6 @@
 import mdx from '@mdx-js/mdx';
 // import * as uur from 'unist-util-remove';
-import { Plugin, Pluggable, Compiler } from 'unified';
+import { /* Plugin, */ Pluggable, Compiler } from 'unified';
 
 import { transformAsync } from '@babel/core';
 import presetEnv from '@babel/preset-env';
