@@ -1,6 +1,6 @@
 import mdx from '@mdx-js/mdx';
-// import * as uur from 'unist-util-remove';
-import { /* Plugin, */ Pluggable, Compiler } from 'unified';
+import * as uur from 'unist-util-remove';
+import { Plugin, Pluggable, Compiler } from 'unified';
 
 import { transformAsync } from '@babel/core';
 import presetEnv from '@babel/preset-env';
@@ -32,14 +32,14 @@ export const DEFAULT_COMPILE_OPTIONS: CompileOptions = {
   scope: {},
 };
 
-// const removeImportsExportsPlugin: Plugin = () => tree => uur.remove(tree, ['import', 'export']);
+const removeImportsExportsPlugin: Plugin = () => tree => uur.remove(tree, ['import', 'export']);
 
 export async function compile(
   mdxPlainSource: string,
   options: CompileOptions = DEFAULT_COMPILE_OPTIONS
 ): Promise<MDXSerialized> {
   const { resourceToURL, scope = {}, ...mdxOptions } = options;
-  options.remarkPlugins = [...(options.remarkPlugins || []) /* removeImportsExportsPlugin */];
+  options.remarkPlugins = [...(options.remarkPlugins || []), removeImportsExportsPlugin];
 
   const istokPlugins = [createBabelPluginIstokResource({ resourceToURL })];
 
