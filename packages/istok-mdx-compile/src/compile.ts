@@ -2,12 +2,8 @@ import mdx from '@mdx-js/mdx';
 import * as uur from 'unist-util-remove';
 import { Plugin, Pluggable, Compiler } from 'unified';
 
-import { transformAsync } from '@babel/core';
-import presetEnv from '@babel/preset-env';
-import presetReact from '@babel/preset-react';
 import { MDXScope, MDXSerialized } from '@istok/mdx';
-
-import createBabelPluginIstokResource from './babel-plugin-istok-resource';
+import * as esbuild from 'esbuild-wasm';
 
 type ResourceToUrl = (source: string) => string;
 
@@ -34,6 +30,8 @@ export const DEFAULT_COMPILE_OPTIONS: CompileOptions = {
 
 const removeImportsExportsPlugin: Plugin = () => tree => uur.remove(tree, ['import', 'export']);
 
+const isBrowser = process.env.JEST_WORKER_ID === undefined && typeof window !== 'undefined';
+
 export async function compile(
   mdxPlainSource: string,
   options: CompileOptions = DEFAULT_COMPILE_OPTIONS
@@ -41,19 +39,22 @@ export async function compile(
   const { resourceToURL, scope = {}, ...mdxOptions } = options;
   options.remarkPlugins = [...(options.remarkPlugins || []), removeImportsExportsPlugin];
 
-  const istokPlugins = [createBabelPluginIstokResource({ resourceToURL })];
-
   const compiledES6CodeFromMdx = await mdx(mdxPlainSource, { ...mdxOptions, skipExport: true });
 
-  const transformed = await transformAsync(compiledES6CodeFromMdx, {
-    presets: [[presetReact, { pragma: 'mdx' }], presetEnv],
-    plugins: istokPlugins,
-    configFile: false,
+  await esbuild.initialize(
+    isBrowser
+      ? {
+          wasmURL: './node_modules/esbuild-wasm/esbuild.wasm',
+        }
+      : {}
+  );
+
+  const { code } = await esbuild.transform(compiledES6CodeFromMdx, {
+    loader: 'jsx',
+    jsxFactory: 'mdx',
+    minify: true,
+    target: ['es2020', 'node12'],
   });
 
-  if (!transformed || !transformed.code) {
-    throw new Error('No code was generated.');
-  }
-
-  return { compiledSource: transformed.code, scope };
+  return { compiledSource: code, scope };
 }

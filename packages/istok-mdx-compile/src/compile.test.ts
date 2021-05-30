@@ -4,32 +4,8 @@ it('should be gucci', async () => {
   const result = await compile(`# hello`);
   expect(result).toMatchInlineSnapshot(`
     Object {
-      "compiledSource": "\\"use strict\\";
-
-    function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
-
-    function _objectWithoutProperties(source, excluded) { if (source == null) return {}; var target = _objectWithoutPropertiesLoose(source, excluded); var key, i; if (Object.getOwnPropertySymbols) { var sourceSymbolKeys = Object.getOwnPropertySymbols(source); for (i = 0; i < sourceSymbolKeys.length; i++) { key = sourceSymbolKeys[i]; if (excluded.indexOf(key) >= 0) continue; if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue; target[key] = source[key]; } } return target; }
-
-    function _objectWithoutPropertiesLoose(source, excluded) { if (source == null) return {}; var target = {}; var sourceKeys = Object.keys(source); var key, i; for (i = 0; i < sourceKeys.length; i++) { key = sourceKeys[i]; if (excluded.indexOf(key) >= 0) continue; target[key] = source[key]; } return target; }
-
-    /* @jsxRuntime classic */
-
-    /* @jsx mdx */
-    var layoutProps = {};
-    var MDXLayout = \\"wrapper\\";
-
-    function MDXContent(_ref) {
-      var components = _ref.components,
-          props = _objectWithoutProperties(_ref, [\\"components\\"]);
-
-      return mdx(MDXLayout, _extends({}, layoutProps, props, {
-        components: components,
-        mdxType: \\"MDXLayout\\"
-      }), mdx(\\"h1\\", null, \\"hello\\"));
-    }
-
-    ;
-    MDXContent.isMDXComponent = true;",
+      "compiledSource": "var M=Object.defineProperty,X=Object.defineProperties;var c=Object.getOwnPropertyDescriptors;var u=Object.getOwnPropertySymbols;var r=Object.prototype.hasOwnProperty,a=Object.prototype.propertyIsEnumerable;var s=(o,t,n)=>t in o?M(o,t,{enumerable:!0,configurable:!0,writable:!0,value:n}):o[t]=n,p=(o,t)=>{for(var n in t||(t={}))r.call(t,n)&&s(o,n,t[n]);if(u)for(var n of u(t))a.call(t,n)&&s(o,n,t[n]);return o},y=(o,t)=>X(o,c(t));var D=(o,t)=>{var n={};for(var e in o)r.call(o,e)&&t.indexOf(e)<0&&(n[e]=o[e]);if(o!=null&&u)for(var e of u(o))t.indexOf(e)<0&&a.call(o,e)&&(n[e]=o[e]);return n};const layoutProps={},MDXLayout=\\"wrapper\\";function MDXContent(n){var e=n,{components:o}=e,t=D(e,[\\"components\\"]);return mdx(MDXLayout,y(p(p({},layoutProps),t),{components:o,mdxType:\\"MDXLayout\\"}),mdx(\\"h1\\",null,\\"hello\\"))}MDXContent.isMDXComponent=!0;
+    ",
       "scope": Object {},
     }
   `);
