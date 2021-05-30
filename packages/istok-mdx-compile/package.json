@@ -50,5 +50,5 @@
     "esbuild-wasm": "^0.12.5",
     "unist-util-remove": "^3.0.0"
   },
-  "gitHead": "02341a7a4aa7657950a6e7c6414217aac23e5a1f"
+  "gitHead": "d108e1aee726cac5c4580fd72c953ac49607e119"
 }

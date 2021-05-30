@@ -2,7 +2,8 @@ import { ReactElement } from 'react';
 import { renderToString as reactRenderToString } from 'react-dom/server';
 import { createElement, loadComponents, AsyncComponentsLoadConfig, MDXScope, ComponentsMap } from '@istok/mdx';
 
-import { DEFAULT_COMPILE_OPTIONS, CompileOptions, compile } from './compile';
+import { compile } from './compile';
+import { DEFAULT_COMPILE_OPTIONS, CompileOptions } from './base';
 
 export interface RenderOptions<S extends MDXScope> {
   components?: ComponentsMap;
