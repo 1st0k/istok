@@ -12,7 +12,7 @@
     "start": "lerna run start",
     "build": "lerna run build",
     "lint": "lerna run lint",
-    "test": "tsdx test --passWithNoTests",
+    "test": "tsdx test",
     "prepublish": "lerna run prepublish",
     "release": "yarn test && yarn lerna publish",
     "release:unsafe": "yarn lerna publish"
@@ -21,6 +21,10 @@
     "lerna": "^3.22.1"
   },
   "devDependencies": {
+    "@babel/core": "^7.14.3",
+    "@babel/preset-env": "^7.14.4",
+    "@babel/preset-react": "^7.13.13",
+    "@babel/preset-typescript": "^7.13.0",
     "@typescript-eslint/eslint-plugin": "^4.17.0",
     "@typescript-eslint/parser": "^4.17.0",
     "babel-jest": "^26.6.3",

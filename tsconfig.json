@@ -6,6 +6,7 @@
       "dom",
       "esnext"
     ],
+    "jsx": "react",
     "moduleResolution": "node",
     "importHelpers": true,
     "declaration": true,

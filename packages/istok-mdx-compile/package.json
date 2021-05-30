@@ -25,10 +25,6 @@
     "prepare": "yarn build"
   },
   "devDependencies": {
-    "@babel/core": "^7.12.3",
-    "@babel/preset-env": "^7.12.1",
-    "@babel/preset-react": "^7.12.5",
-    "@babel/preset-typescript": "^7.13.0",
     "@testing-library/react": "^11.2.2",
     "@types/react": "^16.9.56",
     "@types/react-dom": "^16.9.9",
@@ -50,6 +46,7 @@
   "dependencies": {
     "@istok/mdx": "^0.3.3",
     "@mdx-js/mdx": "^1.6.21",
+    "esbuild": "^0.12.5",
     "esbuild-wasm": "^0.12.5",
     "unist-util-remove": "^3.0.0"
   },

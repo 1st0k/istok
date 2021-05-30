@@ -3,7 +3,6 @@ import * as uur from 'unist-util-remove';
 import { Plugin, Pluggable, Compiler } from 'unified';
 
 import { MDXScope, MDXSerialized } from '@istok/mdx';
-import * as esbuild from 'esbuild-wasm';
 
 type ResourceToUrl = (source: string) => string;
 
@@ -41,20 +40,29 @@ export async function compile(
 
   const compiledES6CodeFromMdx = await mdx(mdxPlainSource, { ...mdxOptions, skipExport: true });
 
-  await esbuild.initialize(
-    isBrowser
-      ? {
-          wasmURL: './node_modules/esbuild-wasm/esbuild.wasm',
-        }
-      : {}
-  );
+  if (!isBrowser) {
+    const esbuild = await import('esbuild');
+    const { code } = await esbuild.transform(compiledES6CodeFromMdx, {
+      loader: 'jsx',
+      jsxFactory: 'mdx',
+      minify: true,
+      target: ['es2020', 'node12'],
+    });
 
-  const { code } = await esbuild.transform(compiledES6CodeFromMdx, {
-    loader: 'jsx',
-    jsxFactory: 'mdx',
-    minify: true,
-    target: ['es2020', 'node12'],
-  });
+    return { compiledSource: code, scope };
+  } else {
+    const esbuild = await import('esbuild-wasm');
+    await esbuild.initialize({
+      wasmURL: './node_modules/esbuild-wasm/esbuild.wasm',
+    });
 
-  return { compiledSource: code, scope };
+    const { code } = await esbuild.transform(compiledES6CodeFromMdx, {
+      loader: 'jsx',
+      jsxFactory: 'mdx',
+      minify: true,
+      target: ['es2020', 'node12'],
+    });
+
+    return { compiledSource: code, scope };
+  }
 }
