@@ -2,28 +2,25 @@ import { MDXSerialized } from '@istok/mdx';
 
 import { CompileOptions, compileToMdx, DEFAULT_COMPILE_OPTIONS } from './base';
 
-let isInitialized = false;
-
-export async function compile(
-  mdxPlainSource: string,
-  options: CompileOptions & { wasmURL?: string } = DEFAULT_COMPILE_OPTIONS
-): Promise<MDXSerialized> {
-  const { code, scope } = await compileToMdx(mdxPlainSource, options);
+export async function makeCompiler({ wasmURL }: { wasmURL?: string }) {
   const esbuild = await import('esbuild-wasm');
 
-  if (!isInitialized) {
-    await esbuild.initialize({
-      wasmURL: options.wasmURL,
-    });
-    isInitialized = true;
-  }
-
-  const { code: compiledSource } = await esbuild.transform(code, {
-    loader: 'jsx',
-    jsxFactory: 'mdx',
-    minify: true,
-    target: ['es2020', 'node12'],
+  await esbuild.initialize({
+    wasmURL,
   });
 
-  return { compiledSource, scope };
+  return async function compile(
+    mdxPlainSource: string,
+    options: CompileOptions = DEFAULT_COMPILE_OPTIONS
+  ): Promise<MDXSerialized> {
+    const { code, scope } = await compileToMdx(mdxPlainSource, options);
+    const { code: compiledSource } = await esbuild.transform(code, {
+      loader: 'jsx',
+      jsxFactory: 'mdx',
+      minify: true,
+      target: ['es2020', 'node12'],
+    });
+
+    return { compiledSource, scope };
+  };
 }
