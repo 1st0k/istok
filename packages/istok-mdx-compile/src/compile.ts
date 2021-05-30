@@ -1,6 +1,6 @@
 import { MDXSerialized } from '@istok/mdx';
 
-import { CompileOptions, compileToMdx, DEFAULT_COMPILE_OPTIONS, removeImportsExportsPlugin } from './base';
+import { CompileOptions, compileToMdx, DEFAULT_COMPILE_OPTIONS } from './base';
 
 export async function compile(
   mdxPlainSource: string,

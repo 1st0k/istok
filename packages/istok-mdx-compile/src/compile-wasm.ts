@@ -1,15 +1,15 @@
 import { MDXSerialized } from '@istok/mdx';
 
-import { CompileOptions, compileToMdx, DEFAULT_COMPILE_OPTIONS, removeImportsExportsPlugin } from './base';
+import { CompileOptions, compileToMdx, DEFAULT_COMPILE_OPTIONS } from './base';
 
 export async function compile(
   mdxPlainSource: string,
-  options: CompileOptions = DEFAULT_COMPILE_OPTIONS
+  options: CompileOptions & { wasmURL?: string } = DEFAULT_COMPILE_OPTIONS
 ): Promise<MDXSerialized> {
   const { code, scope } = await compileToMdx(mdxPlainSource, options);
   const esbuild = await import('esbuild-wasm');
   await esbuild.initialize({
-    wasmURL: './node_modules/esbuild-wasm/esbuild.wasm',
+    wasmURL: options.wasmURL,
   });
 
   const { code: compiledSource } = await esbuild.transform(code, {
