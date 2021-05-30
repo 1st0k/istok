@@ -29,7 +29,8 @@ export const DEFAULT_COMPILE_OPTIONS: CompileOptions = {
 
 const removeImportsExportsPlugin: Plugin = () => tree => uur.remove(tree, ['import', 'export']);
 
-const isBrowser = process.env.JEST_WORKER_ID === undefined && typeof window !== 'undefined';
+const isBrowser = typeof window !== 'undefined';
+const isJest = process.env.JEST_WORKER_ID !== undefined;
 
 export async function compile(
   mdxPlainSource: string,
@@ -40,7 +41,7 @@ export async function compile(
 
   const compiledES6CodeFromMdx = await mdx(mdxPlainSource, { ...mdxOptions, skipExport: true });
 
-  if (!isBrowser) {
+  if (!isBrowser || isJest) {
     const esbuild = await import('esbuild');
     const { code } = await esbuild.transform(compiledES6CodeFromMdx, {
       loader: 'jsx',
