@@ -35,6 +35,7 @@ export function createMemorySource<T>(options: MemorySourceOptions<T> = {}): Uni
       return makeGetSetResultSuccess(id, data);
     },
     async getList(filter) {
+      // todo: get by query = start from offset while not reach the limit
       const list: { id: ResourceId }[] = [];
       for (const k of resources.keys()) {
         if (filter && !filter(k)) {
