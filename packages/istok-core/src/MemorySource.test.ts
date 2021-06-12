@@ -1,144 +1,42 @@
-import { ERROR, SUCCESS } from '@istok/utils';
-
 import { createMemorySource } from './MemorySource';
-import { isGetListResultSuccess, isGetSetResultSuccess, isResultError } from './Source';
 
-describe('MemorySource should get Resource', () => {
-  it('if it was added initially', async done => {
-    const source = createMemorySource({
-      initialResources: {
-        resource: 'resource-value',
-      },
-    });
-
-    const resource = await source.get('resource');
-
-    expect(resource.kind).toEqual(SUCCESS);
-    if (isGetSetResultSuccess(resource)) {
-      expect(resource.resource.data).toBe('resource-value');
-    }
-
-    done();
+it('should be gucci', async () => {
+  const s = createMemorySource({
+    initialResources: {
+      kek: 'KEKW',
+      lol: 'LOLW',
+    },
   });
 
-  it('if it was added later', async done => {
-    const source = createMemorySource<string>();
-
-    const notExistingResource = await source.get('resource');
-    expect(notExistingResource.kind).toEqual(ERROR);
-    if (isResultError(notExistingResource)) {
-      expect(notExistingResource.error).toMatchInlineSnapshot(`"RESOURCE_NOT_EXISTS"`);
+  expect(await s.query({ limit: 0, offset: 0 })).toMatchInlineSnapshot(`
+    Object {
+      "data": Array [
+        Object {
+          "entity": "KEKW",
+          "id": "kek",
+        },
+        Object {
+          "entity": "LOLW",
+          "id": "lol",
+        },
+      ],
+      "kind": "Success",
+      "next": null,
+      "prev": null,
+      "total": 2,
     }
+  `);
 
-    await source.set('resource', 'resource-value');
-
-    const resource = await source.get('resource');
-    expect(resource.kind).toEqual(SUCCESS);
-    if (isGetSetResultSuccess(resource)) {
-      expect(resource.resource.data).toBe('resource-value');
+  expect(await s.ids({ limit: 0, offset: 0 })).toMatchInlineSnapshot(`
+    Object {
+      "data": Array [
+        "kek",
+        "lol",
+      ],
+      "kind": "Success",
+      "next": null,
+      "prev": null,
+      "total": 2,
     }
-
-    done();
-  });
-});
-
-describe('MemorySource should get Resources list', () => {
-  it('empty initial list', async done => {
-    const source = createMemorySource();
-
-    const list = await source.getList();
-
-    expect(isGetListResultSuccess(list)).toBe(true);
-
-    if (isGetListResultSuccess(list)) {
-      expect(list.resources).toBeInstanceOf(Array);
-      expect(list.resources.length).toBe(0);
-    }
-
-    done();
-  });
-
-  it('initial list', async done => {
-    const source = createMemorySource({
-      initialResources: {
-        a: 'resource-a',
-        b: 'resource-b',
-      },
-    });
-
-    const list = await source.getList();
-
-    expect(isGetListResultSuccess(list)).toBe(true);
-
-    if (isGetListResultSuccess(list)) {
-      expect(list.resources).toBeInstanceOf(Array);
-      expect(list.resources.length).toBe(2);
-      expect(list.resources).toEqual(expect.arrayContaining([{ id: 'a' }, { id: 'b' }]));
-    }
-
-    done();
-  });
-
-  it('after items were added', async done => {
-    const source = createMemorySource({
-      initialResources: {
-        a: 'resource-a',
-      },
-    });
-
-    await source.set('b', 'resource-b');
-
-    const list = await source.getList();
-
-    expect(isGetListResultSuccess(list)).toBe(true);
-
-    if (isGetListResultSuccess(list)) {
-      expect(list.resources).toBeInstanceOf(Array);
-      expect(list.resources.length).toBe(2);
-      expect(list.resources).toEqual(expect.arrayContaining([{ id: 'a' }, { id: 'b' }]));
-    }
-
-    done();
-  });
-
-  it('with filter', async done => {
-    const source = createMemorySource({
-      initialResources: {
-        a: 'resource-a',
-        b: 'resource-b',
-        c: 'resource-c',
-      },
-    });
-
-    const list = await source.getList(id => id !== 'c');
-
-    expect(isGetListResultSuccess(list)).toBe(true);
-
-    if (isGetListResultSuccess(list)) {
-      expect(list.resources).toBeInstanceOf(Array);
-      expect(list.resources.length).toBe(2);
-      expect(list.resources).toEqual(expect.arrayContaining([{ id: 'a' }, { id: 'b' }]));
-    }
-
-    done();
-  });
-});
-
-describe('MemorySource should clear resources', () => {
-  it('if resources were added initially', async done => {
-    const source = createMemorySource({
-      initialResources: {
-        resource1: 'resource-value-1',
-        resource2: 'resource-value-2',
-      },
-    });
-
-    const result = await source.clear();
-
-    expect(isGetListResultSuccess(result)).toEqual(true);
-
-    expect((result as any).resources).toMatchObject(expect.arrayContaining([]));
-
-    done();
-  });
+  `);
 });

@@ -1,208 +1,148 @@
-import { ERROR, SUCCESS } from '@istok/utils';
-
-import { createSourcesSequence } from './SourcesSequence';
+import { createSourceSequence } from './SourceSequence';
 import { createMemorySource } from './MemorySource';
-import { ERROR_RESOURCE_NOT_EXISTS, isGetListResultSuccess } from './Source';
 
 import { successSource } from './mocks/sources';
 
 it('should throw if no Sources were provided', () => {
   function init() {
-    createSourcesSequence([]);
+    createSourceSequence({ sources: [] });
   }
   expect(() => init()).toThrow();
 });
 
 describe('SourcesSequence get resource', () => {
   it('return error if Resource is not exist on Source', async done => {
-    const ss = createSourcesSequence([
-      {
-        source: createMemorySource({
+    const ss = createSourceSequence({
+      sources: [
+        createMemorySource({
           initialResources: {
             'unused-resource': 420,
           },
         }),
-      },
-    ]);
+      ],
+    });
 
-    const resource = await ss.get('a/1');
+    const resource = await ss.getFirst('a/1');
 
     expect(resource).toMatchObject(
       expect.objectContaining({
-        error: ERROR_RESOURCE_NOT_EXISTS,
-        kind: ERROR,
+        error: expect.stringMatching(/No resource/),
+        kind: 'Error',
       })
     );
     done();
   });
 
-  it('get resource with 1 source', async done => {
-    const ss = createSourcesSequence([
-      {
-        source: successSource,
-      },
-    ]);
+  it('get resource with 1 source', async () => {
+    const ss = createSourceSequence({
+      sources: [successSource],
+    });
 
-    const resource = await ss.get('a/1');
+    const resource = await ss.getFirst('a/1');
 
-    expect(resource).toMatchObject(
-      expect.objectContaining({
-        resource: expect.objectContaining({
-          data: expect.any(String),
-          id: expect.any(String),
-        }),
-        kind: SUCCESS,
-      })
-    );
-    done();
+    expect(resource).toMatchInlineSnapshot(`
+      Object {
+        "data": Object {
+          "entity": "test resource data",
+          "id": "a/1",
+        },
+        "kind": "Success",
+        "source": Object {
+          "index": 0,
+        },
+      }
+    `);
   });
 
-  it('get resource from 2 sources if last source has Resource', async done => {
-    const ss = createSourcesSequence([
-      {
-        source: createMemorySource(),
-      },
-      {
-        source: successSource,
-      },
-    ]);
+  it('get resource from 2 sources if last source has Resource', async () => {
+    const ss = createSourceSequence({
+      sources: [createMemorySource(), successSource],
+    });
 
-    const resource = await ss.get('a/1');
+    const resource = await ss.getFirst('a/1');
 
-    expect(resource).toMatchObject(
-      expect.objectContaining({
-        resource: expect.objectContaining({
-          data: expect.any(String),
-          id: expect.any(String),
-        }),
-        kind: SUCCESS,
-      })
-    );
-    done();
+    expect(resource).toMatchInlineSnapshot(`
+      Object {
+        "data": Object {
+          "entity": "test resource data",
+          "id": "a/1",
+        },
+        "kind": "Success",
+        "source": Object {
+          "index": 1,
+        },
+      }
+    `);
   });
 });
 
 describe('SourcesSequence set Resource', () => {
-  it('with 2 sources', async done => {
-    const ss = createSourcesSequence([
-      {
-        source: createMemorySource(),
-      },
-      {
-        source: createMemorySource(),
-      },
-    ]);
+  it('with 2 sources', async () => {
+    const ss = createSourceSequence({
+      sources: [createMemorySource(), createMemorySource()],
+    });
 
     await ss.set('resource', 42069);
 
-    const result = await ss.sources[0].get('resource');
+    const result = await ss.getSources()[0].get('resource');
 
-    expect(result).toMatchObject(
-      expect.objectContaining({
-        resource: expect.objectContaining({
-          data: 42069,
-        }),
-      })
-    );
-    done();
+    expect(result).toMatchInlineSnapshot(`
+      Object {
+        "data": Object {
+          "entity": 42069,
+          "id": "resource",
+        },
+        "kind": "Success",
+      }
+    `);
   });
 });
 
-describe('SourcesSequence backpropagates Resource', () => {
-  it('with 2 sources', async done => {
-    const ss = createSourcesSequence([
-      {
-        source: createMemorySource(),
-      },
-      {
-        source: createMemorySource({ initialResources: { resource: 42069 } }),
-      },
-    ]);
+describe('SourcesSequence queryFirst', () => {
+  it('should return list of resources from last source in "inverse" mode', async () => {
+    const ss = createSourceSequence({
+      sources: [
+        createMemorySource({ initialResources: { firstSourceResourceA: 69, firstSourceResourceB: 69 } }),
+        createMemorySource({ initialResources: { secondSourceResource: 420 } }),
+      ],
+    });
 
-    await ss.get('resource');
+    const list = await ss.queryFirst({ limit: 0, offset: 0 }, true);
 
-    const result = await ss.sources[0].get('resource');
+    expect(list.kind).toBe('Success');
 
-    expect(result).toMatchObject(
-      expect.objectContaining({
-        resource: expect.objectContaining({
-          data: 42069,
-        }),
-      })
-    );
-    done();
-  });
-});
-
-describe('SourcesSequence getList', () => {
-  it('should return list of resources from last source if "sourceIndex" is not specified', async done => {
-    const ss = createSourcesSequence([
-      {
-        source: createMemorySource({ initialResources: { firstSourceResourceA: 69, firstSourceResourceB: 69 } }),
-      },
-      {
-        source: createMemorySource({ initialResources: { secondSourceResource: 420 } }),
-      },
-    ]);
-
-    const list = await ss.getList();
-
-    expect(isGetListResultSuccess(list)).toBe(true);
-
-    if (isGetListResultSuccess(list)) {
-      expect(list.resources.length).toBe(1);
-      expect(list.resources[0].id).toEqual(expect.any(String));
+    if (list.kind === 'Success') {
+      expect(list.data.length).toBe(1);
+      expect(list.data[0].id).toEqual(expect.any(String));
     }
-
-    done();
-  });
-
-  it('should return list of resources from source with "sourceIndex"', async done => {
-    const ss = createSourcesSequence([
-      {
-        source: createMemorySource({ initialResources: { firstSourceResourceA: 69, firstSourceResourceB: 69 } }),
-      },
-      {
-        source: createMemorySource({ initialResources: { secondSourceResource: 420 } }),
-      },
-    ]);
-
-    const list = await ss.getList(() => true, 0);
-
-    expect(isGetListResultSuccess(list)).toBe(true);
-
-    if (isGetListResultSuccess(list)) {
-      expect(list.resources.length).toBe(2);
-      expect(list.resources[0].id).toEqual(expect.any(String));
-      expect(list.resources[1].id).toEqual(expect.any(String));
-    }
-
-    done();
   });
 });
 
 describe('SourcesSequence clear', () => {
   it('should remove all resources from every source', async done => {
-    const ss = createSourcesSequence([
-      {
-        source: createMemorySource({ initialResources: { firstSourceResourceA: 69, firstSourceResourceB: 69 } }),
-      },
-      {
-        source: createMemorySource({ initialResources: { secondSourceResource: 420 } }),
-      },
-    ]);
+    const ss = createSourceSequence({
+      sources: [
+        createMemorySource({ initialResources: { firstSourceResourceA: 69, firstSourceResourceB: 69 } }),
+        createMemorySource({ initialResources: { secondSourceResource: 420 } }),
+      ],
+    });
 
     await ss.clear();
 
-    const results = await Promise.all([ss.get('firstSourceResourceA'), ss.get('secondSourceResource')]);
+    const results = await Promise.all([ss.getFirst('firstSourceResourceA'), ss.getFirst('secondSourceResource')]);
 
-    expect(results[0]).toMatchObject({
-      error: ERROR_RESOURCE_NOT_EXISTS,
-    });
-
-    expect(results[1]).toMatchObject({
-      error: ERROR_RESOURCE_NOT_EXISTS,
-    });
+    expect(results[0]).toMatchInlineSnapshot(`
+      Object {
+        "error": "400::No resource with id \\"firstSourceResourceA\\" on any source within interval [0, 1]",
+        "kind": "Error",
+      }
+    `);
+    expect(results[1]).toMatchInlineSnapshot(`
+      Object {
+        "error": "400::No resource with id \\"secondSourceResource\\" on any source within interval [0, 1]",
+        "kind": "Error",
+      }
+    `);
 
     done();
   });

@@ -1,9 +1,9 @@
 export type ResultKind = 'Sucess' | 'Error';
 
 export type ResultSuccess<T> = { kind: 'Success'; data: T };
-export type ResultError<E> = { kind: 'Error'; error: E };
+export type ResultError<E = string> = { kind: 'Error'; error: E };
 
-export type Result<T, E> = ResultSuccess<T> | ResultError<E>;
+export type Result<T, E = string> = ResultSuccess<T> | ResultError<E>;
 
 export function error<E = unknown>(error: E): ResultError<E> {
   return {

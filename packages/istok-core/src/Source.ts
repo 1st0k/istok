@@ -1,83 +1,40 @@
 /*
-  Uniform Finite Source of Resources:
-    - uniform resources (all resource have the same shape)
-    - finite resources count at any given moment
+  Uniform Source of Identifiable Entities
 */
+import { Result, ResultError, ResultSuccess } from './Result';
+import { Id, Entity, EntityRespone } from './Entity';
 
-import {
-  Identifiable,
-  ERROR,
-  SUCCESS,
-  ResultSuccess,
-  ResultError,
-  makeResultError as makeResultErrorUtils,
-  makeResultSuccess,
-} from '@istok/utils';
+export const ERROR_GENERIC = 'ERROR' as const;
+export type GenericError = typeof ERROR_GENERIC;
 
-import { ResourceId, Resource, makeResource } from './Resource';
-/*
-  Result of operations over Resource that affect whole Resource:
-    - set Resource's data
-    - get Resource
-*/
-export type ResourceOpResultSuccess<T> = ResultSuccess<{ resource: Resource<T> }>;
-export type ResourceOpResultError<E> = ResultError<E>;
-export type ResourceOpResult<D, E> = ResourceOpResultSuccess<D> | ResourceOpResultError<E>;
+export const SUCCESS_GENERIC = 'OK' as const;
+export type GenericSuccess = typeof SUCCESS_GENERIC;
 
-export type ResourceOpListResultSuccess = ResultSuccess<{ resources: Identifiable<ResourceId>[] }>;
-export type ResourceOpListResult<E> = ResourceOpListResultSuccess | ResourceOpResultError<E>;
+export type GenericResult = Result<GenericSuccess, string>;
 
-export type OpResultSuccess = ResultSuccess<void>;
-export type OpResult<E> = OpResultSuccess | ResultError<E>;
+export type QueryFilter = (id: Id) => boolean;
 
-export const ERROR_RESOURCE_NOT_EXISTS = 'RESOURCE_NOT_EXISTS' as const;
-export type ErrorResourceNotExists = typeof ERROR_RESOURCE_NOT_EXISTS;
-
-export type ResourceListFilter = (id: ResourceId) => boolean;
-
-export interface UniformFiniteSource<DataType, E> {
-  get(resourceId: ResourceId): Promise<ResourceOpResult<DataType, E>>;
-  set(resourceId: ResourceId, data: DataType): Promise<ResourceOpResult<DataType, E>>;
-  remove(resourceId: ResourceId): Promise<OpResult<E>>;
-
-  getList(filter?: ResourceListFilter): Promise<ResourceOpListResult<E>>;
-  clear(): Promise<ResourceOpListResult<E>>;
+export interface QueryParams {
+  offset?: number;
+  limit?: number;
+  filter?: QueryFilter;
 }
 
-export type Source<DataType, E> = UniformFiniteSource<DataType, E>;
-
-export function makeResultError<E>(error: E): ResourceOpResultError<E> {
-  return makeResultErrorUtils(error);
+export interface QueryPartialResult {
+  next: QueryParams | null;
+  prev: QueryParams | null;
+  total?: number;
 }
 
-export function makeOpResultSuccess(): OpResultSuccess {
-  return makeResultSuccess(undefined);
-}
+export type QueryResult<T> = ResultSuccess<T[]> & QueryPartialResult;
 
-export function makeGetSetResultSuccess<T>(id: ResourceId, data: T): ResourceOpResultSuccess<T> {
-  return makeResultSuccess({
-    resource: makeResource(id, data),
-  });
-}
+export interface Source<T> {
+  get(id: Id): Promise<EntityRespone<T> | ResultError>;
+  set(id: Id, entity: T): Promise<GenericResult>;
 
-export function makeGetListResultSuccees(ids: Identifiable<ResourceId>[]): ResourceOpListResultSuccess {
-  return makeResultSuccess({
-    resources: ids,
-  });
-}
+  delete(id: Id): Promise<GenericResult>;
+  clear(): Promise<GenericResult>;
 
-// Results with errors has the same type for any operation
-export function isResultError<E extends string>(
-  result: ResourceOpResult<unknown, E> | ResourceOpListResult<E>
-): result is ResourceOpResultError<E> {
-  return result.kind === ERROR;
-}
-
-// Successful Results for Get/Set and List operations are different
-export function isGetSetResultSuccess<T>(result: ResourceOpResult<T, any>): result is ResourceOpResultSuccess<T> {
-  return result.kind === SUCCESS;
-}
-
-export function isGetListResultSuccess(result: ResourceOpListResult<any>): result is ResourceOpListResultSuccess {
-  return result.kind === SUCCESS;
+  query(params: QueryParams): Promise<QueryResult<Entity<T>> | ResultError>;
+  ids(params: QueryParams): Promise<QueryResult<Id> | ResultError>;
 }

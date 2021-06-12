@@ -10,7 +10,7 @@ describe('CachableSource', () => {
       });
     }
 
-    expect(() => execute()).toThrowError(/at least 1 level of cache is required/);
+    expect(() => execute()).toThrowError(/cache source is required/);
   });
 
   it('should use 1 level cache', async done => {
@@ -31,21 +31,24 @@ describe('CachableSource', () => {
 
     expect(await s.get('a')).toMatchInlineSnapshot(`
       Object {
-        "kind": "success",
-        "resource": Object {
-          "data": "resource a data",
+        "data": Object {
+          "entity": "resource a data",
           "id": "a",
+        },
+        "kind": "Success",
+        "source": Object {
+          "index": 1,
         },
       }
     `);
 
     expect(await cacheSource.get('a')).toMatchInlineSnapshot(`
       Object {
-        "kind": "success",
-        "resource": Object {
-          "data": "resource a data",
+        "data": Object {
+          "entity": "resource a data",
           "id": "a",
         },
+        "kind": "Success",
       }
     `);
 
@@ -56,10 +59,13 @@ describe('CachableSource', () => {
     const source = createCachableSource({
       caches: [
         {
-          source: createMemorySource(),
+          source: createMemorySource({
+            name: 'empty cache',
+          }),
         },
       ],
       source: createMemorySource({
+        name: 'where all resources',
         initialResources: {
           'ok-1': 'ok',
           'ok-2': 'ok',
@@ -68,19 +74,27 @@ describe('CachableSource', () => {
       }),
     });
 
-    const result = await source.getList(id => id.includes('ok'));
+    const result = await source.query({ limit: 0, offset: 0, filter: id => id.includes('ok') });
 
     expect(result).toMatchInlineSnapshot(`
       Object {
-        "kind": "success",
-        "resources": Array [
+        "data": Array [
           Object {
+            "entity": "ok",
             "id": "ok-1",
           },
           Object {
+            "entity": "ok",
             "id": "ok-2",
           },
         ],
+        "kind": "Success",
+        "next": null,
+        "prev": null,
+        "source": Object {
+          "index": 1,
+        },
+        "total": 3,
       }
     `);
     done();
