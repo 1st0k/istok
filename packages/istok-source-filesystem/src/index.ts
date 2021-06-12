@@ -1,17 +1,72 @@
 import path from 'path';
-import fs from 'fs-extra';
+import fs, { readFile } from 'fs-extra';
 import walk from 'klaw';
 import {
-  makeGetListResultSuccees,
-  makeGetSetResultSuccess,
-  makeResultError,
-  UniformFiniteSource,
+  Source,
   createIdPathAdapter,
   SourceOptions,
-  ResourceListFilter,
   identityTransforms,
-  makeOpResultSuccess,
+  QueryParams,
+  error,
+  QueryResult,
+  Id,
+  ResultError,
+  entityResponse,
+  success,
+  Entity,
 } from '@istok/core';
+
+interface GetAllFilenamesParams {
+  exclude?: RegExp | string;
+  root: string;
+  query?: QueryParams;
+}
+
+function normalizePath(path: string) {
+  return path.replace(/\\/g, '/');
+}
+
+function getAllFilenames(opts: GetAllFilenamesParams) {
+  const { root, query = {} } = opts;
+  const { offset = 0, limit = 0 } = query;
+
+  const resourcePrefixRegExp = new RegExp(`^${normalizePath(path.resolve(root))}\/`, 'gi');
+
+  const files: string[] = [];
+  const exclude =
+    opts.exclude instanceof RegExp
+      ? opts.exclude
+      : typeof opts.exclude === 'string'
+      ? new RegExp(`${opts.exclude}`)
+      : null;
+
+  let count = 0;
+  let currentIndex = 0;
+
+  return new Promise<string[]>((res, rej) => {
+    walk(root)
+      .on('data', d => {
+        if (d.stats.isFile()) {
+          const normalizedPath = normalizePath(d.path).replace(resourcePrefixRegExp, '');
+
+          if (exclude && exclude.test(normalizedPath)) {
+            return;
+          }
+
+          if (currentIndex < offset || (limit && count >= limit)) {
+            return;
+          }
+
+          files.push(normalizedPath);
+          currentIndex++;
+        }
+      })
+      .on('error', e => rej(e))
+      .on('end', () => {
+        res(files);
+      });
+  });
+}
 
 export function meta() {
   return {
@@ -25,7 +80,7 @@ interface FilesystemSourceOptions<T> extends SourceOptions<T> {
   autoCreateRoot?: boolean;
 }
 
-export function createFilesystemSource<T>(opts: FilesystemSourceOptions<T>): UniformFiniteSource<T, string> {
+export function createFilesystemSource<T>(opts: FilesystemSourceOptions<T>): Source<T> {
   const root = opts.root;
 
   const { readTransform = identityTransforms.read, writeTransform = identityTransforms.write } = opts;
@@ -51,58 +106,57 @@ export function createFilesystemSource<T>(opts: FilesystemSourceOptions<T>): Uni
 
     idToPath:
       opts.idToPath ??
-      function (id, pathDelimeter, idDelimeterRegExp) {
+      function(id, pathDelimeter, idDelimeterRegExp) {
         return path.resolve(root, id.replace(idDelimeterRegExp, pathDelimeter));
       },
   });
 
-  function normalizePath(path: string) {
-    return path.replace(/\\/g, '/');
+  async function ids(params: QueryParams): Promise<QueryResult<Id> | ResultError> {
+    try {
+      const filenames = await getAllFilenames({ root, exclude: opts.exclude, query: params });
+      const ids = filenames
+        .map(filename => pathToId(filename))
+        .filter(id => (params.filter ? params.filter(id) : true));
+
+      return {
+        kind: 'Success',
+        data: ids,
+        next: null,
+        prev: null,
+      };
+    } catch (e) {
+      return error(`Failed to get ids of entities: ${e.toString()}`);
+    }
   }
 
-  const resourcePrefixRegExp = new RegExp(`^${normalizePath(path.resolve(root))}\/`, 'gi');
-
-  async function getList(filter: ResourceListFilter) {
-    function getAllFilenames() {
-      const files: string[] = [];
-      const exclude =
-        opts.exclude instanceof RegExp
-          ? opts.exclude
-          : typeof opts.exclude === 'string'
-          ? new RegExp(`${opts.exclude}`)
-          : null;
-
-      return new Promise<string[]>((res, rej) => {
-        walk(root)
-          .on('data', d => {
-            if (d.stats.isFile()) {
-              const normalizedPath = normalizePath(d.path).replace(resourcePrefixRegExp, '');
-
-              if (exclude && exclude.test(normalizedPath)) {
-                return;
-              }
-
-              files.push(normalizedPath);
-            }
-          })
-          .on('error', e => rej(e))
-          .on('end', () => {
-            res(files);
-          });
-      });
-    }
-
+  async function query(params: QueryParams): Promise<QueryResult<Entity<T>> | ResultError> {
     try {
-      const filenames = await getAllFilenames();
+      const filenames = await getAllFilenames({ root, exclude: opts.exclude, query: params });
+      const ids = filenames
+        .map(filename => pathToId(filename))
+        .filter(id => (params.filter ? params.filter(id) : true));
 
-      return makeGetListResultSuccees(
-        filenames
-          .map(filename => pathToId(filename))
-          .filter(id => (filter ? filter(id) : true))
-          .map(id => ({ id }))
-      );
+      const filteredFilenames = ids.map(id => idToPath(id));
+
+      const contents = (
+        await Promise.all(
+          filteredFilenames.map(f => {
+            return readFile(f);
+          })
+        )
+      ).map((buffer, index) => ({
+        entity: readTransform(buffer.toString()),
+        id: ids[index],
+      }));
+
+      return {
+        kind: 'Success',
+        data: contents,
+        next: null,
+        prev: null,
+      };
     } catch (e) {
-      return makeResultError(`Failed to get list of resources: ${e.toString()}`);
+      return error(`Failed to get ids of entities: ${e.toString()}`);
     }
   }
 
@@ -112,12 +166,12 @@ export function createFilesystemSource<T>(opts: FilesystemSourceOptions<T>): Uni
       try {
         const result = ((await fs.readFile(resourcePath)).toString() as unknown) as T;
 
-        return makeGetSetResultSuccess(id, readTransform(result));
-      } catch (error) {
-        if (error.code === 'ENOENT') {
-          return makeResultError(`Resource "${id}" (path: "${resourcePath}") is not exist.`);
+        return entityResponse(id, readTransform(result));
+      } catch (e) {
+        if (e.code === 'ENOENT') {
+          return error(`Resource "${id}" (path: "${resourcePath}") is not exist.`);
         }
-        return makeResultError(`Failed to get Resoruce with id "${id}", path: "${resourcePath}".`);
+        return error(`Failed to get Resoruce with id "${id}", path: "${resourcePath}".`);
       }
     },
     async set(id, data) {
@@ -128,19 +182,20 @@ export function createFilesystemSource<T>(opts: FilesystemSourceOptions<T>): Uni
         const transformedData = writeTransform(data);
         await fs.writeFile(resourcePath, transformedData);
 
-        return makeGetSetResultSuccess(id, data);
+        return success('OK');
       } catch (e) {
-        return makeResultError(`Unable to save Resource "${id}". ${e.toString()}`);
+        return error(`Unable to save Resource "${id}". ${e.toString()}`);
       }
     },
-    getList,
-    async remove(id) {
+    ids,
+    query,
+    async delete(id) {
       const resourcePath = idToPath(id);
       try {
         await fs.remove(resourcePath);
-        return makeOpResultSuccess();
+        return success('OK');
       } catch (e) {
-        return makeResultError(`Unable to remove Resource "${id}" (path: ${resourcePath}): ${e.toString()}`);
+        return error(`Unable to remove Resource "${id}" (path: ${resourcePath}): ${e.toString()}`);
       }
     },
     async clear() {
@@ -150,9 +205,9 @@ export function createFilesystemSource<T>(opts: FilesystemSourceOptions<T>): Uni
         // recreate empty directory
         await fs.mkdir(absoluteRootPath);
 
-        return makeGetListResultSuccees([]);
+        return success('OK');
       } catch (e) {
-        return makeResultError(`Failed to clear resources at "${absoluteRootPath}": ${e.toString()}`);
+        return error(`Failed to clear resources at "${absoluteRootPath}": ${e.toString()}`);
       }
     },
   };

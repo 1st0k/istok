@@ -1,10 +1,7 @@
 import path from 'path';
 import fs from 'fs-extra';
 
-import { isGetListResultSuccess, isGetSetResultSuccess, ResourceOpResultError } from '@istok/core';
-
 import { createFilesystemSource } from '.';
-import { ERROR, SUCCESS } from '@istok/utils';
 
 import { MOCK_RESOURCES_ROOT, mockResourcesPath } from './testUtils';
 
@@ -19,201 +16,262 @@ describe('FilesystemSource should be failed to initialize', () => {
 });
 
 describe('FilesystemSource should get a resource', () => {
-  it('in root directory', async done => {
+  it('in root directory', async () => {
     const fs = createFilesystemSource({ root: path.resolve(MOCK_RESOURCES_ROOT, 'res-1') });
     const resource = await Promise.all([fs.get('1'), fs.get('2'), fs.get('non-existing')]);
 
-    expect(isGetSetResultSuccess(resource[0])).toBe(true);
-    expect(isGetSetResultSuccess(resource[1])).toBe(true);
-    expect(isGetSetResultSuccess(resource[2])).toBe(false);
+    expect(resource[0]).toMatchInlineSnapshot(`
+      Object {
+        "data": Object {
+          "entity": "res-1 data",
+          "id": "1",
+        },
+        "kind": "Success",
+      }
+    `);
+    expect(resource[1]).toMatchInlineSnapshot(`
+      Object {
+        "data": Object {
+          "entity": "",
+          "id": "2",
+        },
+        "kind": "Success",
+      }
+    `);
 
-    expect((resource[2] as ResourceOpResultError<string>).error).toMatch(/is not exist/);
-
-    done();
+    expect(resource[2].kind === 'Error' && resource[2].error).toMatch(/is not exist/);
   });
 
-  it('with sub directories', async done => {
+  it('with sub directories', async () => {
     const fs = createFilesystemSource({ root: MOCK_RESOURCES_ROOT });
     const resource = await Promise.all([fs.get('res-1/1'), fs.get('res-2/a'), fs.get('non-existing')]);
 
-    expect(isGetSetResultSuccess(resource[0])).toBe(true);
-    expect(isGetSetResultSuccess(resource[1])).toBe(true);
-    expect(isGetSetResultSuccess(resource[2])).toBe(false);
+    expect(resource[0]).toMatchInlineSnapshot(`
+      Object {
+        "data": Object {
+          "entity": "res-1 data",
+          "id": "res-1/1",
+        },
+        "kind": "Success",
+      }
+    `);
+    expect(resource[1]).toMatchInlineSnapshot(`
+      Object {
+        "data": Object {
+          "entity": "",
+          "id": "res-2/a",
+        },
+        "kind": "Success",
+      }
+    `);
 
-    expect((resource[2] as ResourceOpResultError<string>).error).toMatch(/is not exist/);
-
-    done();
+    expect(resource[2].kind === 'Error' && resource[2].error).toMatch(/is not exist/);
   });
 });
 
-it('with custom id to path transform', async done => {
+it('with custom id to path transform', async () => {
   const fs = createFilesystemSource({
     root: MOCK_RESOURCES_ROOT,
-    idToPath(id, delimeter) {
-      return path.resolve(MOCK_RESOURCES_ROOT, id.replace(/\|\|/, delimeter));
+    idToPath(id, pathDelimeter) {
+      return path.resolve(MOCK_RESOURCES_ROOT, id.replace(/\|\|/, pathDelimeter));
     },
   });
   const resource = await Promise.all([fs.get('res-1||1')]);
 
-  expect(isGetSetResultSuccess(resource[0])).toBe(true);
-  if (isGetSetResultSuccess(resource[0])) {
-    expect(resource[0].resource).toMatchObject({
-      id: expect.stringMatching(/\|\|/),
-      data: expect.any(String),
-    });
-  }
-  done();
+  expect(resource[0]).toMatchInlineSnapshot(`
+    Object {
+      "data": Object {
+        "entity": "res-1 data",
+        "id": "res-1||1",
+      },
+      "kind": "Success",
+    }
+  `);
 });
 
 describe('FilesystemSource should get list of resources', () => {
-  it('in root directory', async done => {
+  it('in root directory', async () => {
     const fs = createFilesystemSource({ root: path.resolve(MOCK_RESOURCES_ROOT, 'res-1') });
-    const resources = await fs.getList();
+    const resources = await fs.query({});
 
-    expect(resources).toMatchObject({
-      resources: expect.arrayContaining([
-        expect.objectContaining({
-          id: expect.any(String),
-        }),
-      ]),
-    });
-
-    done();
+    expect(resources).toMatchInlineSnapshot(`
+      Object {
+        "data": Array [
+          Object {
+            "entity": "res-1 data",
+            "id": "1",
+          },
+          Object {
+            "entity": "",
+            "id": "2",
+          },
+          Object {
+            "entity": "",
+            "id": "3",
+          },
+        ],
+        "kind": "Success",
+        "next": null,
+        "prev": null,
+      }
+    `);
   });
 
-  it('with sub directories', async done => {
+  it('with sub directories', async () => {
     const fs = createFilesystemSource({ root: MOCK_RESOURCES_ROOT });
-    const resources = await fs.getList();
+    const resources = await fs.query({});
 
-    expect(resources).toMatchObject({
-      resources: expect.arrayContaining([
-        expect.objectContaining({
-          id: expect.any(String),
-        }),
-      ]),
-    });
-
-    done();
+    expect(resources).toMatchInlineSnapshot(`
+      Object {
+        "data": Array [
+          Object {
+            "entity": "",
+            "id": "empty/.gitkeep",
+          },
+          Object {
+            "entity": "res-1 data",
+            "id": "res-1/1",
+          },
+          Object {
+            "entity": "",
+            "id": "res-1/2",
+          },
+          Object {
+            "entity": "",
+            "id": "res-1/3",
+          },
+          Object {
+            "entity": "",
+            "id": "res-2/a",
+          },
+          Object {
+            "entity": "",
+            "id": "res-2/b",
+          },
+          Object {
+            "entity": "",
+            "id": "res-2/c",
+          },
+        ],
+        "kind": "Success",
+        "next": null,
+        "prev": null,
+      }
+    `);
   });
 
-  it('with exclude files pattern', async done => {
+  it('with exclude files pattern', async () => {
     const fs = createFilesystemSource({ root: MOCK_RESOURCES_ROOT, exclude: /res-1/ });
 
-    const list = await fs.getList();
+    const list = await fs.query({});
 
     expect(list).not.toMatchObject({
-      resources: expect.arrayContaining([
+      data: expect.arrayContaining([
         expect.objectContaining({
+          entity: expect.any(String),
           id: expect.stringMatching(/res-1/),
         }),
       ]),
     });
 
     expect(list).toMatchObject({
-      resources: expect.arrayContaining([
+      data: expect.arrayContaining([
         expect.objectContaining({
+          entity: expect.any(String),
           id: expect.stringMatching(/res-2/),
         }),
       ]),
     });
-
-    done();
   });
 
-  it('with custom path to id tranform', async done => {
+  it('with custom path to id tranform', async () => {
     const fs = createFilesystemSource({
       root: MOCK_RESOURCES_ROOT,
       pathToId(path, delimeter) {
         return path.replace(delimeter, '||');
       },
+      idToPath(id, pathDelimeter) {
+        return path.resolve(MOCK_RESOURCES_ROOT, id.replace(/\|\|/, pathDelimeter));
+      },
     });
-    const resources = await fs.getList();
+    const resources = await fs.query({});
 
     expect(resources).toMatchObject({
-      resources: expect.arrayContaining([
+      data: expect.arrayContaining([
         expect.objectContaining({
+          entity: expect.any(String),
           id: expect.stringMatching(/\|\|/),
         }),
       ]),
     });
-
-    done();
   });
 
   it('with exclude by RegExp', async done => {
     const fs = createFilesystemSource({ root: path.resolve(MOCK_RESOURCES_ROOT, 'empty'), exclude: /\.gitkeep/ });
-    const result = await fs.getList();
+    const result = await fs.query({});
 
-    expect(isGetListResultSuccess(result)).toBe(true);
+    expect(result.kind === 'Success').toBe(true);
 
-    expect((result as any).resources).toBeInstanceOf(Array);
-    expect((result as any).resources.length).toBe(0);
+    expect(result).toMatchInlineSnapshot(`
+      Object {
+        "data": Array [],
+        "kind": "Success",
+        "next": null,
+        "prev": null,
+      }
+    `);
 
     done();
   });
 });
 
-it.skip('should set resource in existing directory', async done => {
+it.skip('should set resource in existing directory & remove a resource', async () => {
   const fs = createFilesystemSource({ root: MOCK_RESOURCES_ROOT });
-  const result = await fs.set('res-1__new', 'hello');
-  expect(result).toMatchObject(
+  const setResult = await fs.set('res-1__new__1', 'hello');
+
+  expect(setResult).toMatchObject(
     expect.objectContaining({
-      kind: SUCCESS,
-      resource: expect.objectContaining({
-        data: expect.any(String),
-        id: expect.any(String),
-      }),
+      kind: 'Success',
+      data: 'OK',
     })
   );
-  done();
-});
 
-it.skip('should remove a resource', async () => {
-  const fs = createFilesystemSource({ root: MOCK_RESOURCES_ROOT });
-  await fs.set('res-1__new__1', 'hello');
-  const result = await fs.remove('res-1__new__1');
-  expect(result).toMatchInlineSnapshot(`
+  const deleteResult = await fs.delete('res-1__new__1');
+  expect(deleteResult).toMatchInlineSnapshot(`
     Object {
-      "kind": "success",
+      "data": "OK",
+      "kind": "Success",
     }
   `);
 
   expect(await fs.get('res-1__new__1')).toMatchObject(
     expect.objectContaining({
-      kind: ERROR,
+      kind: 'Error',
       error: expect.stringContaining('not exist'),
     })
   );
 });
 
-it('should create directory for a resource', async done => {
+it.skip('should create directory for a resource', async () => {
   const fs = createFilesystemSource({ root: mockResourcesPath('create-resources-folder'), autoCreateRoot: true });
   const result = await fs.set('resource-1', 'hello');
   expect(result).toMatchObject(
     expect.objectContaining({
-      kind: SUCCESS,
-      resource: expect.objectContaining({
-        data: expect.any(String),
-        id: expect.any(String),
-      }),
+      kind: 'Success',
     })
   );
-
-  done();
 });
 
-it.skip('should clear list of resources', async done => {
+it.skip('should clear list of resources', async () => {
   const root = path.resolve(MOCK_RESOURCES_ROOT, 'to-remove');
   await fs.ensureDir(root);
 
   const source = createFilesystemSource({ root });
 
   await source.clear();
-  const result = await source.getList();
+  const result = await source.query({});
 
   expect(result).toMatchObject({
-    resources: expect.arrayContaining([]),
+    data: expect.arrayContaining([]),
   });
-
-  done();
 });
