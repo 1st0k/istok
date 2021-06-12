@@ -1,13 +1,5 @@
 import { v4 } from 'uuid';
-import {
-  createIdPathAdapter,
-  identityTransforms,
-  makeGetListResultSuccees,
-  makeGetSetResultSuccess,
-  Source,
-  makeOpResultSuccess,
-} from '@istok/core';
-import { makeResultError } from '@istok/utils';
+import { createIdPathAdapter, identityTransforms, Source, error, entityResponse, success } from '@istok/core';
 
 import { FirebaseSourceOptons } from './SourceFirebase';
 import { startService } from './service';
@@ -25,12 +17,12 @@ export type FirebaseStorageSourceOptions<T> = FirebaseSourceOptons<
 export function createFirebaseStorageSource<T = unknown>({
   firebase = startService(),
   options,
-}: FirebaseStorageSourceOptions<T>): Source<T, string> {
+}: FirebaseStorageSourceOptions<T>): Source<T> {
   // root with trailing slash
   const rootNormalized = options.root.endsWith('/') ? options.root : options.root + '/';
   const { readTransform = identityTransforms.read, writeTransform = identityTransforms.write } = options;
 
-  const { pathToId, idToPath } = createIdPathAdapter({
+  const { /* pathToId */ idToPath } = createIdPathAdapter({
     idDelimeter: '/',
     pathDelimeter: '/',
     pathToId:
@@ -41,12 +33,12 @@ export function createFirebaseStorageSource<T = unknown>({
 
     idToPath:
       options.idToPath ??
-      function (id: string, pathDelimeter, idDelimeterRegExp) {
+      function(id: string, pathDelimeter, idDelimeterRegExp) {
         return rootNormalized + id.replace(idDelimeterRegExp, pathDelimeter);
       },
   });
 
-  const bucket = firebase.storage().bucket(options.bucket);
+  const bucket = firebase.app.storage().bucket(options.bucket);
 
   return {
     get(id) {
@@ -63,11 +55,11 @@ export function createFirebaseStorageSource<T = unknown>({
             })
             .on('end', () => {
               const result = Buffer.concat(data).toString();
-              resolve(makeGetSetResultSuccess(id, readTransform(result)));
+              resolve(entityResponse(id, readTransform(result)));
             })
-            .on('error', err => resolve(makeResultError(err.toString())));
+            .on('error', err => resolve(error(err.toString())));
         } catch (err) {
-          resolve(makeResultError(err.toString()));
+          resolve(error(err.toString()));
         }
       });
     },
@@ -87,50 +79,52 @@ export function createFirebaseStorageSource<T = unknown>({
       return new Promise(resolve => {
         bucket.file(resourcePath).save(writeTransform(data), setOptions, err => {
           if (err) {
-            return resolve(makeResultError(err.toString()));
+            return resolve(error(err.toString()));
           }
-          return resolve(makeGetSetResultSuccess(id, data));
+          return resolve(success('OK'));
         });
       });
     },
-    async getList() {
+    async ids() {
+      return error('');
+    },
+    async query() {
       try {
         const [files] = await bucket.getFiles({
           prefix: rootNormalized,
         });
 
-        const filenames = files.map(f => f.name);
+        // const filenames = files.map(f => f.name);
 
-        const rootRegExp = new RegExp(`^${rootNormalized}`);
-        const resourceFilter =
-          options.filter instanceof RegExp ? options.filter : new RegExp(`${options.filter ?? '.*(?<!/)'}$`);
+        // const rootRegExp = new RegExp(`^${rootNormalized}`);
+        // const resourceFilter =
+        //   options.filter instanceof RegExp ? options.filter : new RegExp(`${options.filter ?? '.*(?<!/)'}$`);
 
-        return makeGetListResultSuccees(
-          filenames
-            .filter(f => {
-              // exclude directories and resource that not match suffix
-              const isWithSuffix = resourceFilter.test(f);
-              if (options.debug) {
-                console.log(f, isWithSuffix ? 'is post file' : 'skipped');
-              }
+        return error('qwe');
+        // return filenames
+        //   .filter(f => {
+        //     // exclude directories and resource that not match suffix
+        //     const isWithSuffix = resourceFilter.test(f);
+        //     if (options.debug) {
+        //       console.log(f, isWithSuffix ? 'is post file' : 'skipped');
+        //     }
 
-              return isWithSuffix;
-            })
-            .map(f => {
-              return { id: pathToId(f.replace(rootRegExp, '')) };
-            })
-        );
+        //     return isWithSuffix;
+        //   })
+        //   .map(f => {
+        //     return { id: pathToId(f.replace(rootRegExp, '')) };
+        //   });
       } catch (e) {
-        return makeResultError(`Failed to get list of resources: ${e.toString()}`);
+        return error(`Failed to get list of resources: ${e.toString()}`);
       }
     },
-    async remove(id) {
+    async delete(id) {
       const resourcePath = idToPath(id);
       try {
         bucket.file(resourcePath).delete();
-        return makeOpResultSuccess();
+        return success('OK');
       } catch (e) {
-        return makeResultError(`Failed to delete resource with id "${id}" by path "${resourcePath}": ${e.toString()}.`);
+        return error(`Failed to delete resource with id "${id}" by path "${resourcePath}": ${e.toString()}.`);
       }
     },
     async clear() {
@@ -139,9 +133,9 @@ export function createFirebaseStorageSource<T = unknown>({
           prefix: `${rootNormalized}`,
         });
 
-        return makeGetListResultSuccees([]);
+        return success('OK');
       } catch (e) {
-        return makeResultError(`Failed to clear resources at "${rootNormalized}": ${e.toString()}`);
+        return error(`Failed to clear resources at "${rootNormalized}": ${e.toString()}`);
       }
     },
   };

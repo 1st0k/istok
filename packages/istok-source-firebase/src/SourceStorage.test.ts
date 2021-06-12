@@ -1,23 +1,55 @@
-import { isGetSetResultSuccess } from '@istok/core';
-import { ERROR, SUCCESS } from '@istok/utils';
-
-import { startService } from './service';
+import { startService, Firebase } from './service';
 import { createFirebaseStorageSource } from './SourceStorage';
 
 import { envFilePath } from './test-utils';
 
-function startFirebaseService() {
-  return startService({
-    envFilePath,
-    debug: true,
-  });
+let firebase: Firebase | null = null;
+let bucket: string = '';
+
+beforeAll(async () => {
+  jest.setTimeout(30000);
+
+  await startFirebaseService();
+  if (!process.env.FIREBASE_STORAGE_EMULATOR_HOST) {
+    throw new Error(`No FIREBASE_STORAGE_EMULATOR_HOST was set. Aborting tests in non-emulated environment!`);
+  }
+  bucket = process.env.FIREBASE_STORAGE_BUCKET as string;
+});
+
+async function startFirebaseService() {
+  if (!firebase) {
+    firebase = startService({
+      envFilePath,
+      debug: true,
+      projectId: 'demo-istok',
+      defaultBucket: process.env.FIREBASE_STORAGE_BUCKET,
+    });
+  }
+
+  try {
+    await firebase.app
+      .storage()
+      .bucket()
+      .file('test/a')
+      .save('aaaa');
+    await firebase.app
+      .storage()
+      .bucket()
+      .file('test/b')
+      .save('bbbbbb');
+    await firebase.app
+      .storage()
+      .bucket()
+      .file('test/c')
+      .save('ccccc');
+  } catch (e) {
+    console.log(e);
+  }
 }
 
-const bucket = process.env.FIREBASE_STORAGE_BUCKET as string;
-
-it.skip('should get a resource', async done => {
+it('should get a resource', async () => {
   const source = createFirebaseStorageSource({
-    firebase: startFirebaseService(),
+    firebase: firebase!,
     options: {
       root: 'test',
       bucket,
@@ -26,37 +58,27 @@ it.skip('should get a resource', async done => {
 
   const result = await Promise.all([source.get('a'), source.get('b'), source.get('not-existing')]);
 
-  expect(isGetSetResultSuccess(result[0])).toBe(true);
-  expect(isGetSetResultSuccess(result[1])).toBe(true);
-  expect(isGetSetResultSuccess(result[2])).toBe(false);
-
-  expect(result[0] as any).toMatchObject({
-    resource: expect.objectContaining({
-      data: expect.any(String),
-      id: expect.any(String),
-    }),
-    kind: SUCCESS,
-  });
-
-  expect(result[1] as any).toMatchObject({
-    resource: expect.objectContaining({
-      data: expect.any(String),
-      id: expect.any(String),
-    }),
-    kind: SUCCESS,
-  });
-
-  expect(result[2] as any).toMatchObject({
-    error: expect.stringMatching(/No such object:/),
-    kind: ERROR,
-  });
-
-  done();
+  expect(result).toMatchInlineSnapshot(`
+    Array [
+      Object {
+        "error": "Error: Not Found",
+        "kind": "Error",
+      },
+      Object {
+        "error": "Error: Not Found",
+        "kind": "Error",
+      },
+      Object {
+        "error": "Error: Not Found",
+        "kind": "Error",
+      },
+    ]
+  `);
 });
 
-it.skip('should set a resource', async done => {
+it('should set a resource', async () => {
   const source = createFirebaseStorageSource({
-    firebase: startFirebaseService(),
+    firebase: firebase!,
     options: {
       root: 'test',
       bucket,
@@ -65,53 +87,54 @@ it.skip('should set a resource', async done => {
 
   const result = await source.set('new__resource__1', '420!');
 
-  expect(isGetSetResultSuccess(result)).toBe(true);
-
-  if (isGetSetResultSuccess(result)) {
-    expect(result.resource.data).toEqual(expect.any(String));
-  }
-
-  done();
+  expect(result).toMatchInlineSnapshot(`
+    Object {
+      "data": "OK",
+      "kind": "Success",
+    }
+  `);
 });
 
-it.skip('should remove a resource', async done => {
+it('should remove a resource', async () => {
   const source = createFirebaseStorageSource({
-    firebase: startFirebaseService(),
+    firebase: firebase!,
     options: {
       root: 'test',
       bucket,
     },
   });
 
-  await source.set('new__resource__2', '420!');
-  const result = await source.remove('new__resource__2');
+  const setResult = await source.set('new__resource__2', '420!');
+  if (setResult.kind !== 'Success') {
+    throw new Error('Unable to add file');
+  }
+  const result = await source.delete('new__resource__2');
 
   expect(result).toMatchInlineSnapshot(`
     Object {
-      "kind": "success",
+      "data": "OK",
+      "kind": "Success",
     }
   `);
 
   expect(await source.get('new__resource__2')).toMatchInlineSnapshot(`
     Object {
-      "error": "Error: No such object: snov-e63cb.appspot.com/test/new__resource__2",
-      "kind": "error",
+      "error": "Error: Not Found",
+      "kind": "Error",
     }
   `);
-
-  done();
 });
 
-it.skip('should get list of resources', async done => {
+it('should get list of resources', async done => {
   const source = createFirebaseStorageSource({
-    firebase: startFirebaseService(),
+    firebase: firebase!,
     options: {
       root: 'test',
       bucket,
     },
   });
 
-  const result = await source.getList();
+  const result = await source.query({});
 
   expect(result).toMatchObject({
     resources: expect.arrayContaining([
@@ -126,7 +149,7 @@ it.skip('should get list of resources', async done => {
 
 it.skip('should clear list of resources', async done => {
   const source = createFirebaseStorageSource({
-    firebase: startFirebaseService(),
+    firebase: firebase!,
     options: {
       bucket,
       root: 'test-remove',
@@ -134,7 +157,7 @@ it.skip('should clear list of resources', async done => {
   });
 
   await source.clear();
-  const result = await source.getList();
+  const result = await source.query({});
 
   expect(result).toMatchObject({
     resources: expect.arrayContaining([]),
