@@ -30,11 +30,11 @@
   },
   "dependencies": {
     "@firebase/app-types": "^0.6.1",
-    "@google-cloud/firestore": "^4.9.4",
+    "@google-cloud/firestore": "^4.12.2",
     "@istok/core": "^0.8.0",
     "@types/uuid": "^8.3.0",
     "dotenv": "^8.2.0",
-    "firebase-admin": "^9.5.0",
+    "firebase-admin": "^9.9.0",
     "uuid": "^8.3.0"
   }
 }

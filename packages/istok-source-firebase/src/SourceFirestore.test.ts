@@ -1,6 +1,3 @@
-import { isGetSetResultSuccess } from '@istok/core';
-import { ERROR, SUCCESS } from '@istok/utils';
-
 import { startService, Firebase } from './service';
 import { createFirestoreSource } from './SourceFirestore';
 
@@ -8,30 +5,47 @@ import { envFilePath } from './test-utils';
 
 let firebase: Firebase | null = null;
 
+const ROOT = 'istok-test';
+
 beforeAll(async () => {
   jest.setTimeout(30000);
 
   await startFirebaseService();
+  if (!process.env.FIRESTORE_EMULATOR_HOST) {
+    throw new Error(`No FIRESTORE_EMULATOR_HOST was set. Aborting tests in non-emulated environment!`);
+  }
 });
 
 async function startFirebaseService() {
   firebase = startService({
     envFilePath,
     debug: true,
+    projectId: 'demo-istok',
   });
 
-  await firebase.firestore().doc('test/doc').set({ value: 'test doc' });
-  await firebase.firestore().doc('test/resource__with__multipart__id').set({ value: 'test doc' });
-  await firebase.firestore().doc('test-remove/doc').set({ value: 'test doc' });
+  await Promise.all([
+    firebase.app
+      .firestore()
+      .doc(`${ROOT}/doc`)
+      .set({ value: `test doc !!!` }),
+    firebase.app
+      .firestore()
+      .doc(`${ROOT}/resource__with__multipart__id`)
+      .set({ value: `test doc` }),
+    firebase.app
+      .firestore()
+      .doc(`${ROOT}-remove/doc`)
+      .set({ value: `test doc` }),
+  ]);
 
   return firebase;
 }
 
-it.skip('should get a resource', async () => {
+it('should get a resource', async () => {
   const source = createFirestoreSource<{ data: any }>({
     firebase: firebase!,
     options: {
-      root: 'test',
+      root: ROOT,
     },
   });
 
@@ -41,37 +55,41 @@ it.skip('should get a resource', async () => {
     source.get('not-existing'),
   ]);
 
-  expect(isGetSetResultSuccess(result[0])).toBe(true);
-  expect(isGetSetResultSuccess(result[1])).toBe(true);
-  expect(isGetSetResultSuccess(result[2])).toBe(false);
-
-  expect(result[0] as any).toMatchObject({
-    resource: expect.objectContaining({
-      data: expect.any(Object),
-      id: expect.any(String),
-    }),
-    kind: SUCCESS,
-  });
-
-  expect(result[1] as any).toMatchObject({
-    resource: expect.objectContaining({
-      data: expect.any(Object),
-      id: expect.any(String),
-    }),
-    kind: SUCCESS,
-  });
-
-  expect(result[2] as any).toMatchObject({
-    error: expect.stringMatching(/is not exist/),
-    kind: ERROR,
-  });
+  expect(result[0]).toMatchInlineSnapshot(`
+    Object {
+      "data": Object {
+        "entity": Object {
+          "value": "test doc !!!",
+        },
+        "id": "doc",
+      },
+      "kind": "Success",
+    }
+  `);
+  expect(result[1]).toMatchInlineSnapshot(`
+    Object {
+      "data": Object {
+        "entity": Object {
+          "value": "test doc",
+        },
+        "id": "resource/with/multipart/id",
+      },
+      "kind": "Success",
+    }
+  `);
+  expect(result[2]).toMatchInlineSnapshot(`
+    Object {
+      "error": "Resource \\"not-existing\\" (path: \\"istok-test/not-existing\\") is not exist.",
+      "kind": "Error",
+    }
+  `);
 });
 
-it.skip('should set a resource', async () => {
+it('should set a resource', async () => {
   const source = createFirestoreSource<{ value: number }>({
     firebase: firebase!,
     options: {
-      root: 'test-add',
+      root: `${ROOT}-add`,
     },
   });
 
@@ -81,16 +99,26 @@ it.skip('should set a resource', async () => {
   const setResult = await source.set(resourceId, resourceData);
   const readResult = await source.get(resourceId);
 
-  expect(isGetSetResultSuccess(setResult)).toBe(true);
-  expect(isGetSetResultSuccess(readResult)).toBe(true);
-  expect((readResult as any).resource.data).toEqual(resourceData);
+  expect(setResult.kind === 'Success').toBe(true);
+  expect(readResult.kind === 'Success').toBe(true);
+  expect(readResult).toMatchInlineSnapshot(`
+    Object {
+      "data": Object {
+        "entity": Object {
+          "value": 420,
+        },
+        "id": "new__resource__1",
+      },
+      "kind": "Success",
+    }
+  `);
 });
 
-it.skip('should remove a resource', async () => {
+it('should remove a resource', async () => {
   const source = createFirestoreSource<{ value: number }>({
     firebase: firebase!,
     options: {
-      root: 'test-add',
+      root: `${ROOT}-add`,
     },
   });
 
@@ -98,48 +126,85 @@ it.skip('should remove a resource', async () => {
   const resourceData = { value: 420 };
 
   await source.set(resourceId, resourceData);
-  await source.remove(resourceId);
+  await source.delete(resourceId);
   const readResult = await source.get(resourceId);
 
   expect(readResult).toMatchInlineSnapshot(`
     Object {
-      "error": "Resource \\"new__resource__1\\" (path: \\"test-add/new__resource__1\\") is not exist.",
-      "kind": "error",
+      "error": "Resource \\"new__resource__1\\" (path: \\"istok-test-add/new__resource__1\\") is not exist.",
+      "kind": "Error",
     }
   `);
 });
 
-it.skip('should get list of resources', async () => {
+it('should get list of resources', async () => {
   const source = createFirestoreSource({
     firebase: firebase!,
     options: {
-      root: 'test',
+      root: ROOT,
     },
   });
 
-  const result = await source.getList();
+  const result = await source.query({});
 
-  expect(result).toMatchObject({
-    resources: expect.arrayContaining([
-      expect.objectContaining({
-        id: expect.any(String),
-      }),
-    ]),
-  });
+  expect(result).toMatchInlineSnapshot(`
+    Object {
+      "data": Array [
+        Object {
+          "entity": Object {
+            "value": "test doc !!!",
+          },
+          "id": "doc",
+        },
+        Object {
+          "entity": Object {
+            "value": "test doc",
+          },
+          "id": "resource/with/multipart/id",
+        },
+      ],
+      "kind": "Success",
+      "next": null,
+      "prev": null,
+    }
+  `);
 });
 
-it.skip('should clear list of resources', async () => {
+it('should get ids of resources', async () => {
   const source = createFirestoreSource({
     firebase: firebase!,
     options: {
-      root: 'test-remove',
+      root: ROOT,
+    },
+  });
+
+  const result = await source.ids({});
+
+  expect(result).toMatchInlineSnapshot(`
+    Object {
+      "data": Array [
+        "doc",
+        "resource/with/multipart/id",
+      ],
+      "kind": "Success",
+      "next": null,
+      "prev": null,
+    }
+  `);
+});
+
+it('should clear list of resources', async () => {
+  const source = createFirestoreSource({
+    firebase: firebase!,
+    options: {
+      root: `${ROOT}-remove`,
     },
   });
 
   await source.clear();
-  const result = await source.getList();
+  const result = await source.query({});
 
   expect(result).toMatchObject({
-    resources: expect.arrayContaining([]),
+    data: expect.arrayContaining([]),
   });
 });

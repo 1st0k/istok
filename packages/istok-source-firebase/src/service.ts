@@ -12,6 +12,8 @@ export interface ServiceParams {
   credentialsFromEnvOptions?: GetCredentialsOptions;
   debug?: boolean;
   passCredentialsToEmulator?: boolean;
+  defaultBucket?: string;
+  projectId?: string;
 }
 
 export function startService({
@@ -19,21 +21,34 @@ export function startService({
   debug = false,
   passCredentialsToEmulator = false,
   credentialsFromEnvOptions = {},
+  defaultBucket,
+  projectId,
 }: ServiceParams = {}) {
   const isApp = admin.apps.length;
 
   if (isApp) {
-    return admin.app();
+    return { app: admin.app(), firebase: admin };
   }
 
   const envFileRecord = envsFromFile(envFilePath).parsed || {};
+  const storageBucket = defaultBucket || process.env.FIREBASE_STORAGE_BUCKET;
 
-  const isUseEmulator = !!process.env.FIRESTORE_EMULATOR_HOST;
+  const isUseEmulator = !!process.env.FIRESTORE_EMULATOR_HOST || !!process.env.FIREBASE_STORAGE_EMULATOR_HOST;
   // Pass credentials to emulator only if corresponding flag is set
   const shouldPassCredentials = !isUseEmulator || passCredentialsToEmulator;
 
   if (isUseEmulator) {
-    console.log('Using Firestore emulator: ', process.env.FIRESTORE_EMULATOR_HOST);
+    console.log('Using Firestore emulator:', process.env.FIRESTORE_EMULATOR_HOST);
+    console.log('Using Storage emulator:', process.env.FIREBASE_STORAGE_EMULATOR_HOST);
+
+    return {
+      app: admin.initializeApp({
+        projectId: projectId || process.env.project_id,
+        credential: admin.credential.applicationDefault(),
+        storageBucket,
+      }),
+      firebase: admin,
+    };
   }
 
   const credentials = shouldPassCredentials
@@ -49,13 +64,20 @@ export function startService({
     if (debug) {
       console.log('firebase: using default credentials');
     }
-    return admin.initializeApp();
+    return {
+      app: admin.initializeApp(),
+      firebase: admin,
+    };
   }
 
-  return admin.initializeApp({
-    // ...JSON.parse(process.env.FIREBASE_CONFIG ?? '{}'),
-    credential: admin.credential.cert(credentials as admin.ServiceAccount),
-  });
+  return {
+    app: admin.initializeApp({
+      // ...JSON.parse(process.env.FIREBASE_CONFIG ?? '{}'),
+      credential: admin.credential.cert(credentials as admin.ServiceAccount),
+      storageBucket,
+    }),
+    firebase: admin,
+  };
 }
 
 export type Firebase = ReturnType<typeof startService>;
