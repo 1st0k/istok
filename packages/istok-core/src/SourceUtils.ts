@@ -14,11 +14,11 @@ export interface SourceOptions<T, R = unknown> {
 }
 
 export const identityTransforms = {
-  read<T>(rawResource: unknown) {
-    return rawResource as T;
+  read<T, R>(rawResource: R) {
+    return (rawResource as unknown) as T;
   },
-  write<T>(data: T) {
-    return data;
+  write<T, R>(data: T) {
+    return (data as unknown) as R;
   },
 };
 
