@@ -1,5 +1,5 @@
 {
-  "version": "0.9.0",
+  "version": "0.9.1",
   "name": "@istok/source-filesystem",
   "author": "Alexander \"Snov\" Semenchenko",
   "main": "dist/index.js",
@@ -30,7 +30,7 @@
   },
   "gitHead": "a610b274facd35b7e7a2a2e850f3a970d48ab3d8",
   "dependencies": {
-    "@istok/core": "^0.9.0",
+    "@istok/core": "^0.9.1",
     "@types/klaw": "^3.0.1",
     "chokidar": "^3.4.2",
     "fs-extra": "^9.0.1",
