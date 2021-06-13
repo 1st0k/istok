@@ -173,7 +173,7 @@ export function createFirebaseStorageSource({
     async delete(id) {
       const resourcePath = idToPath(id);
       try {
-        bucket.file(resourcePath).delete();
+        await bucket.file(resourcePath).delete();
         return success('OK');
       } catch (e) {
         return error(`Failed to delete resource with id "${id}" by path "${resourcePath}": ${e.toString()}.`);
