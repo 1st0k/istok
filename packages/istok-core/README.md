@@ -12,3 +12,15 @@ Sources Sequence - sequence of sources with primary use case for caches.
 - Set resource to all sources in the sequence.
 
 Cachable Source - Sources Sequence with invalidation rules.
+
+### Source Sequence
+
+Source1 -- Source2 -- Source3
+  Res1      Res1      Res1
+            Res2      Res2
+                      Res3
+
+Strategy: Get First / Set All
+
+`get('Res1')` -> Source1.Res1.
+`set()
