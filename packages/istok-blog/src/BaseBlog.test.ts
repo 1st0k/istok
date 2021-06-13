@@ -44,7 +44,7 @@ describe(`BaseBlog`, () => {
   it(`should get list of posts with default filter`, async done => {
     const blog = setupBaseBlog(posts, idToPathParams);
 
-    const list = await blog.getPostsList();
+    const list = await blog.getPostsList({});
 
     expect(list).toMatchInlineSnapshot(`
       Array [
@@ -63,17 +63,17 @@ describe(`BaseBlog`, () => {
   it(`should get posts data`, async done => {
     const blog = setupBaseBlog(posts, idToPathParams);
 
-    const list = await blog.getPostsList();
+    const list = await blog.getPostsList({});
     const postsData = await blog.getPosts(list);
 
     expect(postsData).toMatchInlineSnapshot(`
       Array [
         Object {
-          "data": "привет",
+          "entity": "привет",
           "id": "hello/ru",
         },
         Object {
-          "data": "hi",
+          "entity": "hi",
           "id": "hello/en",
         },
       ]
@@ -85,7 +85,7 @@ describe(`BaseBlog`, () => {
   it(`should get params of a post`, async done => {
     const blog = setupBaseBlog(posts, idToPathParams);
 
-    const list = await blog.getPostsList();
+    const list = await blog.getPostsList({});
 
     const params = blog.getPostsParams(list);
 

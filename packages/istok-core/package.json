@@ -1,5 +1,5 @@
 {
-  "version": "0.8.0",
+  "version": "0.9.1",
   "name": "@istok/core",
   "author": "Alexander \"Snov\" Semenchenko",
   "main": "dist/index.js",
@@ -28,7 +28,7 @@
     "access": "public",
     "registry": "https://registry.npmjs.org"
   },
-  "gitHead": "7617d9ceb82edb5c2421254b0eace4d0ede7a5c3",
+  "gitHead": "a610b274facd35b7e7a2a2e850f3a970d48ab3d8",
   "dependencies": {
     "@istok/utils": "^0.1.6",
     "@types/ramda": "^0.27.17",

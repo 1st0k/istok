@@ -48,7 +48,7 @@ export type MetadataPlugin<
 export async function getPostMetadata<InlineMetadata extends object>(
   post: Post
 ): Promise<PostWithMetadata<InlineMetadata>> {
-  const { data: metadata, content } = matter(post.data);
+  const { data: metadata, content } = matter(post.entity);
 
   return {
     metadata: metadata as MetadataBase<InlineMetadata>,

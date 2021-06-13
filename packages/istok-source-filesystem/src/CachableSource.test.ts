@@ -36,13 +36,13 @@ it('should be used as a cache', async done => {
 
   expect(cached).toMatchInlineSnapshot(`
     Object {
-      "kind": "success",
-      "resource": Object {
-        "data": Object {
+      "data": Object {
+        "entity": Object {
           "res-1-data": 420,
         },
         "id": "res-1",
       },
+      "kind": "Success",
     }
   `);
   done();
@@ -74,11 +74,11 @@ it('should be used as a cache and as source', async done => {
 
   expect(cached).toMatchInlineSnapshot(`
     Object {
-      "kind": "success",
-      "resource": Object {
-        "data": "res-1 data",
+      "data": Object {
+        "entity": "res-1 data",
         "id": "res-1/1",
       },
+      "kind": "Success",
     }
   `);
   done();

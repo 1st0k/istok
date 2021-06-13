@@ -1,23 +1,13 @@
 import { UpdateData, DocumentData } from '@google-cloud/firestore';
 
-import {
-  makeGetListResultSuccees,
-  makeGetSetResultSuccess,
-  makeResultError,
-  UniformFiniteSource,
-  createIdPathAdapter,
-  identityTransforms,
-  makeOpResultSuccess,
-} from '@istok/core';
+import { Source, createIdPathAdapter, identityTransforms, error, entityResponse, success, Entity } from '@istok/core';
 import { startService } from './service';
 import { FirebaseSourceOptons } from './SourceFirebase';
 
 export type FirestoreSourceOptions<T> = FirebaseSourceOptons<T>;
 
-export function createFirestoreSource<T>({
-  firebase = startService(),
-  options,
-}: FirestoreSourceOptions<T>): UniformFiniteSource<T, string> {
+export function createFirestoreSource<T>({ firebase = startService(), options }: FirestoreSourceOptions<T>): Source<T> {
+  const { app } = firebase;
   const root = options.root.endsWith('/') ? options.root : `${options.root}/`;
 
   const { readTransform = identityTransforms.read, writeTransform = identityTransforms.write } = options;
@@ -33,7 +23,7 @@ export function createFirestoreSource<T>({
 
     idToPath:
       options.idToPath ??
-      function (id: string, pathDelimeter, idDelimeterRegExp) {
+      function(id: string, pathDelimeter, idDelimeterRegExp) {
         return root + id.replace(idDelimeterRegExp, pathDelimeter);
       },
   });
@@ -56,28 +46,31 @@ export function createFirestoreSource<T>({
     async get(id) {
       const resourcePath = idToPath(id);
       try {
-        const doc = await firebase.firestore().doc(resourcePath).get();
+        const doc = await app
+          .firestore()
+          .doc(resourcePath)
+          .get();
 
         if (!doc.exists) {
-          return makeResultError(`Resource "${id}" (path: "${resourcePath}") is not exist.`);
+          return error(`Resource "${id}" (path: "${resourcePath}") is not exist.`);
         }
 
         const data = doc.data() as T | undefined;
 
         if (!data) {
-          return makeResultError(`Resource "${id}" (path: "${resourcePath}") has no data.`);
+          return error(`Resource "${id}" (path: "${resourcePath}") has no data.`);
         }
 
-        return makeGetSetResultSuccess(id, readTransform(data));
-      } catch (error) {
-        return makeResultError(`Failed to get Resource with id "${id}", path: "${resourcePath}".`);
+        return entityResponse(id, readTransform(data));
+      } catch (e) {
+        return error(`Failed to get Resource with id "${id}", path: "${resourcePath}".`);
       }
     },
     async set(id, data) {
       const resourcePath = idToPath(id);
 
       try {
-        const docRef = firebase.firestore().doc(resourcePath);
+        const docRef = app.firestore().doc(resourcePath);
         const docData = await docRef.get();
         const transformedData = writeTransform(data);
         if (docData.exists) {
@@ -85,41 +78,101 @@ export function createFirestoreSource<T>({
         } else {
           await docRef.create(transformedData as DocumentData);
         }
-        return makeGetSetResultSuccess(id, data);
+        return success('OK');
       } catch (e) {
-        return makeResultError(`Failed to set Resource with id "${id}", path: "${resourcePath}: ${e.toString()}".`);
+        return error(`Failed to set Resource with id "${id}", path: "${resourcePath}: ${e.toString()}".`);
       }
     },
-    async getList() {
+    // TODO: filter
+    async query({ limit = 0, offset = 0 }) {
       const listRoot = root.slice(0, -1);
       try {
-        const collectionRef = firebase.firestore().collection(listRoot);
-        const docs = await collectionRef.listDocuments();
+        let collectionRef = app
+          .firestore()
+          .collection(listRoot)
+          .limit(limit)
+          .offset(offset);
 
-        return makeGetListResultSuccees(docs.map(({ id }) => ({ id: pathToId(id) })));
+        const docs = await collectionRef.get();
+
+        let result: Entity<T>[] = [];
+
+        docs.forEach(doc => {
+          if (doc.exists) {
+            const data = doc.data();
+
+            if (data) {
+              result.push({ entity: readTransform(data), id: pathToId(doc.id) });
+            }
+          }
+        });
+
+        return {
+          kind: 'Success',
+          data: result,
+          next: null,
+          prev: null,
+        };
       } catch (e) {
-        return makeResultError(`Failed to get list of resources: ${e.toString()}`);
+        return error(`Failed to query entities: ${e.toString()}`);
       }
     },
-    async remove(id) {
+    // TODO: filter
+    async ids({ limit = 0, offset = 0 }) {
+      const listRoot = root.slice(0, -1);
+      try {
+        let collectionRef = app
+          .firestore()
+          .collection(listRoot)
+          .limit(limit)
+          .offset(offset);
+
+        const docs = await collectionRef.get();
+
+        let result: string[] = [];
+
+        docs.forEach(doc => {
+          if (doc.exists) {
+            const data = doc.data();
+
+            if (data) {
+              result.push(pathToId(doc.id));
+            }
+          }
+        });
+
+        return {
+          kind: 'Success',
+          data: result,
+          next: null,
+          prev: null,
+        };
+      } catch (e) {
+        return error(`Failed to query ids of entities: ${e.toString()}`);
+      }
+    },
+    async delete(id) {
       const resourcePath = idToPath(id);
       try {
-        const docRef = firebase.firestore().doc(resourcePath);
+        const docRef = app.firestore().doc(resourcePath);
         await docRef.delete();
-        return makeOpResultSuccess();
+        return success('OK');
       } catch (e) {
-        return makeResultError(`Failed to delete resource with id "${id}" by path "${resourcePath}": ${e.toString()}.`);
+        return error(`Failed to delete resource with id "${id}" by path "${resourcePath}": ${e.toString()}.`);
       }
     },
     async clear() {
       const listRoot = root.slice(0, -1);
       try {
-        const docs = await firebase.firestore().collection(listRoot).listDocuments();
+        const docs = await app
+          .firestore()
+          .collection(listRoot)
+          .listDocuments();
 
         await Promise.all(docs.map(doc => doc.delete()));
-        return makeGetListResultSuccees([]);
+        return success('OK');
       } catch (e) {
-        return makeResultError(`Failed to clear resources: ${e.toString()}`);
+        return error(`Failed to clear resources: ${e.toString()}`);
       }
     },
   };

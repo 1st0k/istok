@@ -5,12 +5,12 @@ export type IdPathAdapterOptions = {
   idToPath(id: string, pathDelimeter: string, idDelimeterRegExp: RegExp): string;
 };
 
-export interface SourceOptions<T> {
+export interface SourceOptions<T, R = unknown> {
   root: string;
   pathToId?: IdPathAdapterOptions['pathToId'];
   idToPath?: IdPathAdapterOptions['idToPath'];
-  readTransform?(rawData: unknown): T;
-  writeTransform?(data: T): unknown;
+  readTransform?(rawData: R): T;
+  writeTransform?(data: T): R;
 }
 
 export const identityTransforms = {

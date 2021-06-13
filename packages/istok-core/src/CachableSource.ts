@@ -1,36 +1,37 @@
-import { ResourceOpListResult, Source, UniformFiniteSource } from './Source';
-import { createSourcesSequence } from './SourcesSequence';
+import { error } from './Result';
+import { GenericResult, Source } from './Source';
+import { createSourceSequence } from './SourceSequence';
 
-export type CacheLevelOptions<DataType, E> = {
-  source: Source<DataType, E>;
+export type CacheLevelOptions<T> = {
+  source: Source<T>;
   invalidateOnInit?: boolean;
   invalidationInterval?: number;
 };
 
-export type CachableSourceOptions<DataType, E> = {
-  source: Source<DataType, E>;
-  caches: CacheLevelOptions<DataType, E>[];
+export type CachableSourceOptions<T> = {
+  source: Source<T>;
+  caches: CacheLevelOptions<T>[];
 };
 
-export interface CachableSource<DataType> extends UniformFiniteSource<DataType, string> {
+export interface CachableSource<T> extends Source<T> {
   release(): void;
 }
 
-export function createCachableSource<DataType>({
-  caches,
-  source,
-}: CachableSourceOptions<DataType, string>): CachableSource<DataType> {
-  if (caches.length === 0) {
-    throw new Error(`Failed to create CachedSource: at least 1 level of cache is required.`);
+export function createCachableSource<T>({ caches, source }: CachableSourceOptions<T>): CachableSource<T> {
+  const cacheSourcesCount = caches.length;
+  if (cacheSourcesCount === 0) {
+    throw new Error(`Failed to create CachedSource: at least one cache source is required.`);
   }
-  const seq = createSourcesSequence([...caches.map(cache => ({ source: cache.source })), { source }]);
 
+  const seq = createSourceSequence({ sources: [...caches.map(({ source }) => source), source] });
+  const cacheSources = seq.getSources([0, cacheSourcesCount - 1]);
   const invalidationHandlers: ReturnType<typeof setInterval>[] = [];
 
   async function invalidateOnInit() {
-    const clearPromises: Promise<ResourceOpListResult<string>>[] = [];
-    for (let i = 0; i < seq.sources.length - 1; i++) {
-      const s = seq.sources[i];
+    const clearPromises: Promise<GenericResult>[] = [];
+
+    for (let i = 0; i < cacheSources.length; i++) {
+      const s = cacheSources[i];
       const shouldInvalidate = caches[i].invalidateOnInit;
       if (shouldInvalidate) {
         clearPromises.push(s.clear());
@@ -51,14 +52,14 @@ export function createCachableSource<DataType>({
   async function setupInvalidationOnPeriod() {
     clearInvalidationHandlers();
 
-    for (let i = 0; i < seq.sources.length - 1; i++) {
+    for (let i = 0; i < cacheSources.length; i++) {
       const period = caches[i].invalidationInterval;
       if (period === undefined) {
         continue;
       }
       invalidationHandlers.push(
         setInterval(() => {
-          seq.sources[i].clear();
+          cacheSources[i].clear();
         }, period)
       );
     }
@@ -67,31 +68,50 @@ export function createCachableSource<DataType>({
   setupInvalidationOnPeriod();
   const isReady = invalidateOnInit();
 
-  function executeWhenReady<T>(fn: () => Promise<T>) {
-    return new Promise<T>(async resolve => {
-      await isReady;
-      resolve(fn());
-    });
-  }
-
   return {
     release() {
       clearInvalidationHandlers();
     },
     async get(id) {
-      return executeWhenReady(() => seq.get(id));
+      return isReady.then(async () => {
+        const result = await seq.getFirst(id);
+        if (result.kind === 'Success') {
+          const originIndex = result.source.index;
+
+          if (originIndex > 0) {
+            await seq.set(id, result.data.entity, [0, originIndex - 1]);
+          }
+        }
+
+        return result;
+      });
     },
     async set(id, data) {
-      return executeWhenReady(() => seq.set(id, data));
+      return isReady.then(async () => {
+        const result = await seq.set(id, data);
+
+        return result[result.length - 1] || error(`Failed to set entity "${id}"`);
+      });
     },
-    async getList(filter) {
-      return executeWhenReady(() => seq.getList(filter));
+    async query(params) {
+      return isReady.then(() => seq.queryFirst(params, true));
     },
-    async remove(id) {
-      return executeWhenReady(() => seq.remove(id));
+    async ids(params) {
+      return isReady.then(() => seq.idsFirst(params, true));
+    },
+    async delete(id) {
+      return isReady.then(async () => {
+        const result = await seq.delete(id);
+
+        return result[result.length - 1] || error(`Failed to delete entity "${id}"`);
+      });
     },
     async clear() {
-      return executeWhenReady(() => seq.clear());
+      return isReady.then(async () => {
+        const result = await seq.clear();
+
+        return result[result.length - 1] || error(`Failed to clear sources`);
+      });
     },
   };
 }
