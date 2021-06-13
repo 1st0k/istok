@@ -69,11 +69,11 @@ describe(`BaseBlog`, () => {
     expect(postsData).toMatchInlineSnapshot(`
       Array [
         Object {
-          "data": "привет",
+          "entity": "привет",
           "id": "hello/ru",
         },
         Object {
-          "data": "hi",
+          "entity": "hi",
           "id": "hello/en",
         },
       ]

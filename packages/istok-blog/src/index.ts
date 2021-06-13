@@ -95,13 +95,13 @@ export class Blog<P extends BlogParams, InlineMetadata extends object, F extends
   }
 
   async getPostsList(params: PostListQueryParams): Promise<PostsIds> {
-    const list = await this.sources.posts.query(params);
+    const list = await this.sources.posts.ids(params);
 
     if (list.kind === 'Error') {
       throw new Error('Failed to get list of posts.');
     }
 
-    return list.data;
+    return list.data.map(el => ({ id: el }));
   }
 
   async getPosts(postsIds: PostsIds, params: PostListQueryParams = allPostsFilter) {
