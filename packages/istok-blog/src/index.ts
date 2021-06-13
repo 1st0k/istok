@@ -1,5 +1,4 @@
-import { ResourceListFilter, isGetListResultSuccess, isGetSetResultSuccess, Resource, Source } from '@istok/core';
-import { Identifiable } from '@istok/utils';
+import { Source, Entity, QueryParams, Identifiable } from '@istok/core';
 import { MetadataBase, getPostMetadata, MetadataPlugin, MetadataPluginResult, PostWithMetadata } from './metadata';
 import { getSlugMetadata } from './MetadataSlug';
 
@@ -27,12 +26,18 @@ export type BlogParams<P extends object = {}, E extends object = {}> = E & {
 export type IdToParams<P extends BlogParams> = (id: string) => P;
 export type ParamsToId<P extends BlogParams> = (params: P) => string;
 
-export type PostsListFilter = ResourceListFilter;
+export type PostListQueryParams = QueryParams;
 
-export const allPostsFilter: PostsListFilter = () => true;
+export const allPostsFilter: PostListQueryParams = {
+  limit: 0,
+  offset: 0,
+  filter() {
+    return true;
+  },
+};
 
-export type Post = Resource<string>;
-export type PostsIds = Identifiable<string>[];
+export type Post = Entity<string>;
+export type PostsIds = Identifiable[];
 
 export interface BlogOptions<
   P extends BlogParams,
@@ -46,8 +51,8 @@ export interface BlogOptions<
 }
 
 export interface BlogSources {
-  posts: Source<string, string>;
-  internal: Source<string, string>;
+  posts: Source<string>;
+  internal: Source<string>;
 }
 
 export class Blog<P extends BlogParams, InlineMetadata extends object, F extends object, GlobalMeta extends object> {
@@ -82,25 +87,25 @@ export class Blog<P extends BlogParams, InlineMetadata extends object, F extends
   async getPost(id: string) {
     const post = await this.sources.posts.get(id);
 
-    if (!isGetSetResultSuccess(post)) {
+    if (post.kind === 'Error') {
       throw new Error(`Failed to get post "${id}".`);
     }
 
-    return post.resource;
+    return post.data;
   }
 
-  async getPostsList(filter: PostsListFilter = allPostsFilter): Promise<PostsIds> {
-    const list = await this.sources.posts.getList(filter);
+  async getPostsList(params: PostListQueryParams): Promise<PostsIds> {
+    const list = await this.sources.posts.query(params);
 
-    if (!isGetListResultSuccess(list)) {
+    if (list.kind === 'Error') {
       throw new Error('Failed to get list of posts.');
     }
 
-    return list.resources;
+    return list.data;
   }
 
-  async getPosts(postsIds: PostsIds, filter: PostsListFilter = allPostsFilter) {
-    const ids = postsIds.map(post => post.id).filter(filter);
+  async getPosts(postsIds: PostsIds, params: PostListQueryParams = allPostsFilter) {
+    const ids = postsIds.map(post => post.id).filter(params.filter ?? Boolean);
 
     const resource = await Promise.all(ids.map(id => this.getPost(id)));
 
@@ -135,16 +140,16 @@ export class Blog<P extends BlogParams, InlineMetadata extends object, F extends
     const getListResult = await this.sources.internal.get('list');
     const currentPostSlug = getSlugMetadata(this, currentPostId);
 
-    if (isGetSetResultSuccess(getListResult)) {
+    if (getListResult.kind === 'Success') {
       try {
-        const data = JSON.parse(getListResult.resource.data as string);
+        const data = JSON.parse(getListResult.data.entity);
         if (data.invalidated === false) {
           return data.posts[currentPostSlug];
         }
       } catch (e) {}
     }
 
-    const postsList = await this.getPostsList();
+    const postsList = await this.getPostsList({});
 
     const meta = await this.metadataPlugin.buildGlobalMetadata(postsList);
 
