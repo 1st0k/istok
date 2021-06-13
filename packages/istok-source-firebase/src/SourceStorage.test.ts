@@ -6,6 +6,18 @@ import { envFilePath } from './test-utils';
 let firebase: Firebase | null = null;
 let bucket: string = '';
 
+function createSource(root = 'test', filter = undefined) {
+  return createFirebaseStorageSource({
+    firebase: firebase!,
+    options: {
+      root,
+      bucket,
+      noValidate: true,
+      entityPathFilter: filter,
+    },
+  });
+}
+
 beforeAll(async () => {
   jest.setTimeout(30000);
 
@@ -42,31 +54,36 @@ async function startFirebaseService() {
       .bucket()
       .file('test/c')
       .save('ccccc');
+    await firebase.app
+      .storage()
+      .bucket()
+      .file('test2/a')
+      .save('test2-aaaaaa');
   } catch (e) {
     console.log(e);
   }
 }
 
 it('should get a resource', async () => {
-  const source = createFirebaseStorageSource({
-    firebase: firebase!,
-    options: {
-      root: 'test',
-      bucket,
-    },
-  });
+  const source = createSource();
 
   const result = await Promise.all([source.get('a'), source.get('b'), source.get('not-existing')]);
 
   expect(result).toMatchInlineSnapshot(`
     Array [
       Object {
-        "error": "Error: Not Found",
-        "kind": "Error",
+        "data": Object {
+          "entity": "aaaa",
+          "id": "a",
+        },
+        "kind": "Success",
       },
       Object {
-        "error": "Error: Not Found",
-        "kind": "Error",
+        "data": Object {
+          "entity": "bbbbbb",
+          "id": "b",
+        },
+        "kind": "Success",
       },
       Object {
         "error": "Error: Not Found",
@@ -77,13 +94,7 @@ it('should get a resource', async () => {
 });
 
 it('should set a resource', async () => {
-  const source = createFirebaseStorageSource({
-    firebase: firebase!,
-    options: {
-      root: 'test',
-      bucket,
-    },
-  });
+  const source = createSource();
 
   const result = await source.set('new__resource__1', '420!');
 
@@ -96,13 +107,7 @@ it('should set a resource', async () => {
 });
 
 it('should remove a resource', async () => {
-  const source = createFirebaseStorageSource({
-    firebase: firebase!,
-    options: {
-      root: 'test',
-      bucket,
-    },
-  });
+  const source = createSource();
 
   const setResult = await source.set('new__resource__2', '420!');
   if (setResult.kind !== 'Success') {
@@ -125,36 +130,96 @@ it('should remove a resource', async () => {
   `);
 });
 
-it('should get list of resources', async done => {
-  const source = createFirebaseStorageSource({
-    firebase: firebase!,
-    options: {
-      root: 'test',
-      bucket,
+it('should query Ids of resources', async () => {
+  const source = createSource();
+
+  const result = await source.ids({
+    filter(id) {
+      return id.length === 1;
     },
   });
+
+  expect(result).toMatchInlineSnapshot(`
+    Object {
+      "data": Array [
+        "a",
+        "b",
+        "c",
+        "new__resource__1",
+      ],
+      "kind": "Success",
+      "next": null,
+      "prev": null,
+      "total": 4,
+    }
+  `);
+});
+
+it('should query resources', async () => {
+  const source = createSource();
 
   const result = await source.query({});
 
-  expect(result).toMatchObject({
-    resources: expect.arrayContaining([
-      expect.objectContaining({
-        id: expect.not.stringContaining('test/'),
-      }),
-    ]),
-  });
+  expect(result).toMatchInlineSnapshot(`
+    Object {
+      "data": Array [
+        Object {
+          "entity": "aaaa",
+          "id": "a",
+        },
+        Object {
+          "entity": "bbbbbb",
+          "id": "b",
+        },
+        Object {
+          "entity": "ccccc",
+          "id": "c",
+        },
+        Object {
+          "entity": "420!",
+          "id": "new__resource__1",
+        },
+      ],
+      "kind": "Success",
+      "next": null,
+      "prev": null,
+      "total": 4,
+    }
+  `);
 
-  done();
+  expect(await source.query({ limit: 1 })).toMatchInlineSnapshot(`
+    Object {
+      "data": Array [
+        Object {
+          "entity": "aaaa",
+          "id": "a",
+        },
+      ],
+      "kind": "Success",
+      "next": null,
+      "prev": null,
+      "total": 4,
+    }
+  `);
+
+  expect(await source.query({ limit: 1, offset: 3 })).toMatchInlineSnapshot(`
+    Object {
+      "data": Array [
+        Object {
+          "entity": "420!",
+          "id": "new__resource__1",
+        },
+      ],
+      "kind": "Success",
+      "next": null,
+      "prev": null,
+      "total": 4,
+    }
+  `);
 });
 
 it.skip('should clear list of resources', async done => {
-  const source = createFirebaseStorageSource({
-    firebase: firebase!,
-    options: {
-      bucket,
-      root: 'test-remove',
-    },
-  });
+  const source = createSource('test-remove');
 
   await source.clear();
   const result = await source.query({});

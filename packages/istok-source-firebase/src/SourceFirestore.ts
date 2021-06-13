@@ -83,6 +83,7 @@ export function createFirestoreSource<T>({ firebase = startService(), options }:
         return error(`Failed to set Resource with id "${id}", path: "${resourcePath}: ${e.toString()}".`);
       }
     },
+    // TODO: filter
     async query({ limit = 0, offset = 0 }) {
       const listRoot = root.slice(0, -1);
       try {
@@ -116,6 +117,7 @@ export function createFirestoreSource<T>({ firebase = startService(), options }:
         return error(`Failed to query entities: ${e.toString()}`);
       }
     },
+    // TODO: filter
     async ids({ limit = 0, offset = 0 }) {
       const listRoot = root.slice(0, -1);
       try {
