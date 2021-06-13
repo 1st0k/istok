@@ -5,8 +5,8 @@ import { createIdPathAdapter, identityTransforms, Source, error, entityResponse,
 import { FirebaseSourceOptons } from './SourceFirebase';
 import { startService } from './service';
 
-export type FirebaseStorageSourceOptions = FirebaseSourceOptons<
-  string,
+export type FirebaseStorageSourceOptions<T> = FirebaseSourceOptons<
+  T,
   {
     bucket: string;
     isPublic?: boolean;
@@ -34,10 +34,10 @@ function readFile(file: File, noValidate = false): Promise<string> {
   });
 }
 
-export function createFirebaseStorageSource({
+export function createFirebaseStorageSource<T>({
   firebase = startService(),
   options,
-}: FirebaseStorageSourceOptions): Source<string> {
+}: FirebaseStorageSourceOptions<T>): Source<T> {
   // root with trailing slash
   const rootNormalized = options.root.endsWith('/') ? options.root : options.root + '/';
   const { readTransform = identityTransforms.read, writeTransform = identityTransforms.write } = options;
@@ -72,7 +72,6 @@ export function createFirebaseStorageSource({
 
       try {
         const content = await readFile(bucket.file(resourcePath), options.noValidate);
-        console.log('read', content);
         return entityResponse(id, readTransform(content));
       } catch (e) {
         return error(e.toString());
@@ -156,7 +155,7 @@ export function createFirebaseStorageSource({
 
         const data = ids.map((id, index) => ({
           id,
-          entity: contents[index],
+          entity: readTransform(contents[index]),
         }));
 
         return {
