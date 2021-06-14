@@ -1,14 +1,14 @@
 import mdx from '@mdx-js/mdx';
 import * as uur from 'unist-util-remove';
-import { Plugin, Pluggable, Compiler } from 'unified';
+import { Plugin, Compiler } from 'unified';
 import { MDXScope } from '@istok/mdx';
 
 export type ResourceToUrl = (source: string) => string;
 
 export type CompileOptionsBase = {
-  remarkPlugins?: Pluggable[];
-  rehypePlugins?: Pluggable[];
-  hastPlugins?: Pluggable[];
+  remarkPlugins?: Plugin[];
+  rehypePlugins?: Plugin[];
+  hastPlugins?: Plugin[];
   compilers?: Compiler[];
 };
 
