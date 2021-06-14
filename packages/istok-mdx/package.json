@@ -1,5 +1,5 @@
 {
-  "version": "0.3.3",
+  "version": "0.4.0",
   "name": "@istok/mdx",
   "author": "Alexander \"Snov\" Semenchenko",
   "main": "dist/index.js",
