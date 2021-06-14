@@ -45,7 +45,7 @@
   },
   "dependencies": {
     "@istok/mdx": "^0.3.3",
-    "@mdx-js/mdx": "^1.6.21",
+    "@mdx-js/mdx": "^2.0.0-next.9",
     "esbuild": "^0.12.5",
     "esbuild-wasm": "^0.12.5",
     "unist-util-remove": "^3.0.0"
