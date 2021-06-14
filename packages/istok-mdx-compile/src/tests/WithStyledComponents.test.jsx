@@ -47,7 +47,7 @@ it('should extract the CSS and render content HTML', async () => {
   });
 
   expect(contentHtml).toMatchInlineSnapshot(
-    `"<h1>hey yo</h1><h1 class=\\"sc-bdfBwQ hSHKCF\\">styled title</h1><div>LOL</div>"`
+    `"<h1>hey yo</h1><p><h1 class=\\"sc-bdfBwQ hSHKCF\\">styled title</h1></p><p><div>LOL</div></p>"`
   );
   expect(css).toMatchInlineSnapshot(`
     "<style data-styled=\\"true\\" data-styled-version=\\"5.2.1\\">.hSHKCF{font-size:1.5em;text-align:center;color:palevioletred;}/*!sc*/
