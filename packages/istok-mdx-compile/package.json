@@ -1,5 +1,5 @@
 {
-  "version": "0.13.0",
+  "version": "0.13.1",
   "name": "@istok/mdx-compile",
   "author": "Alexander \"Snov\" Semenchenko",
   "main": "dist/index.js",
@@ -44,7 +44,7 @@
     "react-dom": "^17.0.1"
   },
   "dependencies": {
-    "@istok/mdx": "^0.4.0",
+    "@istok/mdx": "^0.4.1",
     "@mdx-js/mdx": "^2.0.0-next.9",
     "esbuild": "^0.12.5",
     "esbuild-wasm": "^0.12.5",
